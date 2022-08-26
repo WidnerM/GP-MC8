@@ -24,6 +24,7 @@ target_sources(
                           "${CMAKE_CURRENT_LIST_DIR}/src/Inputs.cpp"
                           "${CMAKE_CURRENT_LIST_DIR}/src/Knobs.cpp"
                           "${CMAKE_CURRENT_LIST_DIR}/src/Buttons.cpp"
+                          "${CMAKE_CURRENT_LIST_DIR}/src/MC8_Classes.h"
                           "${CMAKE_CURRENT_LIST_DIR}/src/General_Utils.cpp")
 
 target_link_libraries(${PROJECT_NAME} PRIVATE gigperformer::sdk::cpp)

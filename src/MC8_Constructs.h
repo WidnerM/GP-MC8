@@ -23,14 +23,11 @@
 #define MESSAGE_OP 0x11
 
 
-
-
 #define EXTENSION_IDENTIFIER "Morningstar MCx Extension"
 #define MCX_MIDI_IN "MIDIIN2 (Morningstar MC8)"
 #define MIDI_IN_WIDGETNAME "mcx_midiin"
 #define MCX_MIDI_OUT "MIDIOUT2 (Morningstar MC8)"
 #define MIDI_OUT_WIDGETNAME "mcx_midiout"
-#define SL_MIDI_KEYLIGHTS "SL Keylights"
 
 #define KNOB "k"
 #define FADER "f"

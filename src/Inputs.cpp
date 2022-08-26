@@ -40,286 +40,68 @@ bool LibMain::RowPreviousBank(SurfaceRow & row)
 
 void LibMain::ProcessButton(uint8_t button, uint8_t value)  // processes a midi button press
 {
-    int x;
-    std::string widgetname;
+    if (value == 127 && button <= 0x3f) // only process button down
+    {
+        uint8_t thisposition = button & 0x03;
+        uint8_t thisrow = (button >> 2) & 03;
+        uint8_t thisaction = (button >> 4) & 03;
+        scriptLog("Process button- position:" + std::to_string(thisposition) + "  row:" + std::to_string(thisrow) + "  action:" + std::to_string(thisaction), 1);
 
-    if (value == 127) {  // only process button downs
-        
-        // use this to toggle between seeing racks/variation or songs/songparts depending on mode
-        if (button == MCX_TOP_SELECT) 
-        {
-            switch (Surface.Row[TOP_ROW].Showing)
-            {
-            case SHOW_BUTTONS:
-                Surface.Row[TOP_ROW].Showing = SHOW_VARS_PARTS;
-                CurrentBankName(" ^-- Variations / Parts");
-                break;
-            case SHOW_VARS_PARTS:
-                Surface.Row[TOP_ROW].Showing = SHOW_RACKS_SONGS;
-                CurrentBankName(" ^-- Racks / Songs");
-                break;
-            default:
-                CurrentBankName(" ^-- Buttons");
-                Surface.Row[TOP_ROW].Showing = SHOW_BUTTONS;
-            }
-            DisplayRow(Surface.Row[TOP_ROW]);
-        }
-
-        if (button == MCX_T2_SELECT)
-        {
-            switch (Surface.Row[T2_ROW].Showing)
-            {
-            case SHOW_BUTTONS:
-                Surface.Row[T2_ROW].Showing = SHOW_VARS_PARTS;
-                CurrentBankName(" ^-- Variations / Parts");
-                break;
-            case SHOW_VARS_PARTS:
-                Surface.Row[T2_ROW].Showing = SHOW_RACKS_SONGS;
-                CurrentBankName(" ^-- Racks / Songs");
-                break;
-            default:
-                CurrentBankName(" ^-- Buttons");
-                Surface.Row[T2_ROW].Showing = SHOW_BUTTONS;
-            }
-            DisplayRow(Surface.Row[T2_ROW]);
-        }
-
-        else if (button == MCX_BOTTOM_SELECT)
-        {
-            switch (Surface.Row[BOTTOM_ROW].Showing)
-            {
-            case SHOW_BUTTONS:
-                Surface.Row[BOTTOM_ROW].Showing = SHOW_VARS_PARTS;
-                LongPresetNames(" v-- Variations / Parts");
-                break;
-            case SHOW_VARS_PARTS:
-                Surface.Row[BOTTOM_ROW].Showing = SHOW_RACKS_SONGS;
-                LongPresetNames(" v-- Racks / Songs");
-                break;
-            default:
-                LongPresetNames(" v-- Buttons");
-                Surface.Row[BOTTOM_ROW].Showing = SHOW_BUTTONS;
-            }
-            DisplayRow(Surface.Row[BOTTOM_ROW]);
-        }
-
-        else if (button == MCX_B2_SELECT)
-        {
-            switch (Surface.Row[B2_ROW].Showing)
-            {
-            case SHOW_BUTTONS:
-                Surface.Row[B2_ROW].Showing = SHOW_VARS_PARTS;
-                LongPresetNames(" v-- Variations / Parts");
-                break;
-            case SHOW_VARS_PARTS:
-                Surface.Row[B2_ROW].Showing = SHOW_RACKS_SONGS;
-                LongPresetNames(" v-- Racks / Songs");
-                break;
-            default:
-                LongPresetNames(" v-- Buttons");
-                Surface.Row[B2_ROW].Showing = SHOW_BUTTONS;
-            }
-            DisplayRow(Surface.Row[B2_ROW]);
-        }
-
-        // handle the bank up and bank down buttons
-        else if (button == MCX_BOTTOM_BANK_UP)  
-        {
-            RowNextBank(Surface.Row[BOTTOM_ROW]);
-            DisplayRow(Surface.Row[BOTTOM_ROW]);
-        }
-
-        else if (button == MCX_BOTTOM_BANK_DOWN)  
-        {
-            RowPreviousBank(Surface.Row[BOTTOM_ROW]);
-            DisplayRow(Surface.Row[BOTTOM_ROW]);
-        }
-
-        else if (button == MCX_TOP_BANK_UP)
-        {
-            RowNextBank(Surface.Row[TOP_ROW]);
-            DisplayRow(Surface.Row[TOP_ROW]);
-        }
-
-        else if (button == MCX_TOP_BANK_DOWN)
-        {
-            RowPreviousBank(Surface.Row[TOP_ROW]);
-            DisplayRow(Surface.Row[TOP_ROW]);
-        }
-
-        else if (button == MCX_B2_BANK_UP)
-        {
-            RowNextBank(Surface.Row[B2_ROW]);
-            DisplayRow(Surface.Row[B2_ROW]);
-        }
-
-        else if (button == MCX_B2_BANK_DOWN)
-        {
-            RowPreviousBank(Surface.Row[B2_ROW]);
-            DisplayRow(Surface.Row[B2_ROW]);
-        }
-
-        else if (button == MCX_T2_BANK_UP)
-        {
-            RowNextBank(Surface.Row[T2_ROW]);
-            DisplayRow(Surface.Row[T2_ROW]);
-        }
-
-        else if (button == MCX_T2_BANK_DOWN)
-        {
-            RowPreviousBank(Surface.Row[T2_ROW]);
-            DisplayRow(Surface.Row[T2_ROW]);
-        }
-
-        // this is to choose songs/racks
-        /*  else if ((button >= MKIII_DISPLAY_BUTTON_1) && (button <= MKIII_DISPLAY_BUTTON_8))
-        {
-            x = button - MKIII_DISPLAY_BUTTON_1;
-            if (Surface.BottomMode == SHOW_SONGS)
-            {
-                x += Surface.FirstShown[Surface.BottomMode];
-                if (x < getSongCount()) { switchToSong(x, 0); }
-            }
-            else if (Surface.BottomMode == SHOW_SONGPARTS)
-            {
-                if (x <= 7) // on button 7 we display the current song, currently do nothing if that button is pushed
-                {
-                    x += Surface.FirstShown[Surface.BottomMode];
-                    if (x < getSongpartCount(getCurrentSongIndex())) { switchToSong(getCurrentSongIndex(), x); }
-                }
-            }
-            else if (Surface.BottomMode == SHOW_RACKSPACES)
-            {
-                x += Surface.FirstShown[Surface.BottomMode];
-                if (x < getRackspaceCount()) { switchToRackspaceName(getRackspaceName(x), ""); }
-            }
-            else if (Surface.BottomMode == SHOW_VARIATIONS)
-            {
-                if (x <= 7) // on button 7 we display the current rackspace, currently do nothing if that button is pushed
-                {
-                    x += Surface.FirstShown[Surface.BottomMode];
-                    if (x < getVariationCount(getCurrentRackspaceIndex())) { switchToRackspace(getCurrentRackspaceIndex(), x); }
-                }
-            }
-        }
-
-        else if (button == SONGLIST_UP)
-        {
-            if (Surface.BottomMode == SHOW_SONGS)
-            {
-                if (Surface.FirstShown[Surface.BottomMode] >= 8)
-                {
-                    Surface.FirstShown[Surface.BottomMode] -= 8; // decrement by a page of 8.
-                    DisplayBottom(false);
-                }
-                else
-                {
-                    Surface.BottomMode = SHOW_SONGPARTS;  // switch into songparts mode if user presses into a bank that doesn't exist
-                    DisplayBottom(true);
-                }
-            }
-            else if (Surface.BottomMode == SHOW_SONGPARTS)
-            {
-                if (Surface.FirstShown[Surface.BottomMode] >= 7)
-                {
-                    Surface.FirstShown[Surface.BottomMode] -= 7; // decrement by a page.  If it's below first page, switch back to showing songs.
-                    DisplayBottom(false);
-                }
-                else
-                {
-                    Surface.BottomMode = SHOW_SONGS;
-                    DisplayBottom(true);
-                }
-            }
-            else if (Surface.BottomMode == SHOW_RACKSPACES)
-            {
-                if (Surface.FirstShown[Surface.BottomMode] >= 8)
-                {
-                    Surface.FirstShown[Surface.BottomMode] -= 8; // increment by a page.  If this is beyond the end it will be fixed in the DisplaySongs call.
-                    DisplayBottom(false);
-                }
-                else
-                {
-                    Surface.BottomMode = SHOW_VARIATIONS;
-                    DisplayBottom(true);
-                }
-            }
-            else if (Surface.BottomMode == SHOW_VARIATIONS)
-            {
-                if (Surface.FirstShown[Surface.BottomMode] >= 7)
-                {
-                    Surface.FirstShown[Surface.BottomMode] -= 7; // increment by a page.  If this is beyond the end it will be fixed in the DisplaySongs call.
-                    DisplayBottom(true);
-                }
-                else
-                {
-                    Surface.BottomMode = SHOW_RACKSPACES;
-                    DisplayBottom(true);
-                }
-            }
-        }
-        
-        else if (button == SONGLIST_DOWN)
-        {
-            if (Surface.BottomMode == SHOW_SONGS)
-            {
-                if (Surface.FirstShown[Surface.BottomMode] < getSongCount() - 8)
-                {
-                    Surface.FirstShown[Surface.BottomMode] += 8; // increment by a page.
-                    DisplayBottom(false);
-                }
-                else
-                {
-                    Surface.BottomMode = SHOW_SONGPARTS;
-                    DisplayBottom(true);
-                }
-            }
-            else if (Surface.BottomMode == SHOW_SONGPARTS)
-            {
-                if (Surface.FirstShown[Surface.BottomMode] < getSongpartCount(getCurrentSongIndex()) - 7)
-                {
-                    Surface.FirstShown[Surface.BottomMode] += 7; // increment by a page.  If this is beyond the end it will be fixed in the DisplaySongs call.
-                    DisplayBottom(false);
-                }
-                else
-                {
-                    Surface.BottomMode = SHOW_SONGS;
-                    DisplayBottom(true);
-                }
-            }
-            else if (Surface.BottomMode == SHOW_RACKSPACES)
-            {
-                if (Surface.FirstShown[Surface.BottomMode] < getRackspaceCount() - 8)
-                {
-                    Surface.FirstShown[Surface.BottomMode] += 8; // increment by a page.  If this is beyond the end it will be fixed in the DisplaySongs call.
-                    DisplayBottom(false);
-                }
-                else
-                {
-                    Surface.BottomMode = SHOW_VARIATIONS;
-                    DisplayBottom(true);
-                }
-            }
-            else if (Surface.BottomMode == SHOW_VARIATIONS)
-            {
-                if (Surface.FirstShown[Surface.BottomMode] < getVariationCount(getCurrentRackspaceIndex()) - 7)
-                {
-                    Surface.FirstShown[Surface.BottomMode] += 7; // increment by a page.  If this is beyond the end it will be fixed in the DisplaySongs call.
-                    DisplayBottom(true);
-                }
-                else
-                {
-                    Surface.BottomMode = SHOW_RACKSPACES;
-                    DisplayBottom(true);
-                }
-            }
-        } */
-
-        else if ((button >= MCX_BUTTON_BASE) && (button <= MCX_BUTTON_MAX))
+        if (thisaction == MCX_BUTTON_ACTION)
         {
             ToggleButton(button);
         }
-    }
+        else if (thisaction == MCX_ROW_ACTION)
+        {
+            switch (thisposition) // thisposition items are coded for ACTION_DOWN, ACTION_UP, ACTION_SELECT
+            {
+            case MCX_ACTION_DOWN:
+                switch (Surface.Row[thisrow].Showing)
+                {
+                case SHOW_BUTTONS:
+                    RowPreviousBank(Surface.Row[thisrow]);
+                    DisplayRow(Surface.Row[thisrow]);
+                    break;
+                case SHOW_VARS_PARTS:
+                case SHOW_RACKS_SONGS:
+                    Surface.Row[thisrow].FirstShown -= 4;
+                    DisplayVariations(Surface.Row[thisrow], 0, 4, false);
+                }
+                break;
+            case MCX_ACTION_UP:
+                switch (Surface.Row[thisrow].Showing)
+                {
+                case SHOW_BUTTONS:
+                    RowNextBank(Surface.Row[thisrow]);
+                    DisplayRow(Surface.Row[thisrow]);
+                    break;
+                case SHOW_VARS_PARTS:
+                case SHOW_RACKS_SONGS:
+                    Surface.Row[thisrow].FirstShown += 4;
+                    DisplayVariations(Surface.Row[thisrow], 0, 4, false);
+                    break;
+                }
+                break;
+            case MCX_ACTION_SELECT:
+                switch (Surface.Row[thisrow].Showing)
+                {
+                case SHOW_BUTTONS:
+                    Surface.Row[thisrow].Showing = SHOW_VARS_PARTS;
+                    DisplayVariations(Surface.Row[thisrow], 0, 4, true);
+                    break;
+                case SHOW_VARS_PARTS:
+                    Surface.Row[thisrow].Showing = SHOW_RACKS_SONGS;
+                    DisplayVariations(Surface.Row[thisrow], 0, 4, true);
+                    break;
+                default:
+                    Surface.Row[thisrow].Showing = SHOW_BUTTONS;
+                    DisplayRow(Surface.Row[thisrow]);
+                    break;
+                }
+                break;
+            } // switch
+        } // if it's a row action */
+    } // button down (127)
 }
 
 

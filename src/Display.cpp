@@ -75,7 +75,7 @@ void LibMain::PresetLongName(std::string text, uint8_t position)
 {
 
     std::string cleantext = cleanSysex(text) + (std::string) "                          ";
-    // SendTextToMCx(cleantext.substr(0, 24), 0x03, position, 0x00);
+    SendTextToMCx(cleantext.substr(0, 24), 0x03, position, 0x00);
 }
 
 // sets all preset Long Names to this so it stays on screen regardless of current preset
@@ -89,7 +89,7 @@ void LibMain::LongPresetNames(std::string text)
 void LibMain::CurrentBankName(std::string text)
 {
     std::string cleantext = cleanSysex(text) + (std::string) "                          ";
-    // SendTextToMCx(cleantext.substr(0, 24), 0x10, 0, 0);
+    SendTextToMCx(cleantext.substr(0, 24), 0x10, 0, 0);
 }
 
 
@@ -120,19 +120,6 @@ std::string LibMain::GPColorToSLColorHex(int color)
 }
 
 
-
-// lights keylights on SL MKIII
-void LibMain::Keylights(const uint8_t* data, int length)
-{
-    if (data[1] >= 0x18 && data[1] < 0x54) { // 0x44 to 0x80 for sysex or 00 to 3c  | key range is 0x18 - 0x54 but 0x54 is actually pad up arrow
-        // if (data[0] == 0x90) sendMidiMessage(GPMidiMessage::makeNoteOnMessage(data[1], data[2], 16));
-        // if (data[0] == 0x80) sendMidiMessage(GPMidiMessage::makeNoteOffMessage(data[1], data[2], 16));
-        uint8_t red = data[2];
-        uint8_t blue = 0x7f - data[2];
-        if (data[0] == 0x90) SetButtonRGBColor(data[1] + 0x2c, ( blue < 90 ? 0x010000 * red : 0x00) + (red > 90 ? 0x00 : blue ));
-        if (data[0] == 0x80) SetButtonRGBColor(data[1] + 0x2c, 0x000000);
-    }
-}
 
 // these should only be called if we're changing one item and not touching the rest of the screen
 void LibMain::ShowTopLabelColor(uint8_t position, uint8_t color)
@@ -212,20 +199,6 @@ void LibMain::SetButtonRGBColor(uint8_t button, int value) // int parameter will
 }
 
 // Show value of a widget on its linked control surface item
-/*  void LibMain::DisplayWidgetValue(const SurfaceRow &row, uint8_t column, std::string text, double value)
-{
-    DisplayWidgetValue(row, column, text, (uint8_t)(127 * value));
-}
-
-void LibMain::DisplayWidgetValue(const SurfaceRow & row, uint8_t column, std::string text, uint8_t value)
-{
-    PresetShortName((value != 0 ? (std::string) "*" : "") + text, column);
-}
-
-void LibMain::DisplayWidgetValue(const SurfaceRow &row, uint8_t column, std::string text, int value)
-{
-    PresetShortName((value != 0 ? (std::string) "*" : "") + text, column); 
-} */
 
 void LibMain::DisplayWidgetValue(const SurfaceRow &row, SurfaceWidget widget)
 { 

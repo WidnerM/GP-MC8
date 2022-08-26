@@ -1,8 +1,9 @@
-// Novation SL MK3 button and knob CC assignments
-// When pressed in InControl mode the buttons/knobs produce a CC event on channel 16.
-// Buttons produce a 127 [7f] for press, 0 for release.
-// These same assignments can be used when writing information back to the buttons/knobs for color/position (0-127)
-// Note that button colors and knob positions can also be changed by Sysex commands with full R G B control.
+// Morningstar MC8 button assignments
+// we view the MC8 as a series of rows with buttons in banks of 4
+// we use the two least significant bits as button number (0-4, left to right)
+// the next two bits are the row (00 = bottom page one, 01 = top page one, 10 = bottom page 2, 11 = top page 2)
+// bit four indicates whether it's a bank message button or just regular button push
+// bank message buttons are 00 = down, 01 = up, 10 = select, 11 = TBD
 
 #pragma once
 
@@ -17,6 +18,16 @@
 #define MCX_BUTTON_E3 0x10
 #define MCX_BUTTON_E4 0x13
 
+#define MCX_BUTTON_ACTION 0x00
+#define MCX_ROW_ACTION 0x01
+
+#define MCX_ACTION_DOWN 0x00
+#define MCX_ACTION_SELECT 0x01
+#define MCX_ACTION_OTHER 0x02
+#define MCX_ACTION_UP 0x03
+
+
+// these aren't correct anymore...
 #define MCX_BOTTOM_BANK_DOWN 30
 #define MCX_BOTTOM_BANK_UP 31
 #define MCX_TOP_BANK_DOWN 32

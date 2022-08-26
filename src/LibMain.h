@@ -52,7 +52,6 @@ public:
 
     std::vector<std::string> MidiOut = { MCX_MIDI_OUT };
     std::vector<std::string> MidiIn = { MCX_MIDI_IN };
-    std::vector<std::string> MidiKeylightsIn = { SL_MIDI_KEYLIGHTS };
 
     // Generic support function definitions and includes
 
@@ -78,7 +77,6 @@ public:
 
     void InitializeMC8();
     void DisplayText(uint8_t column, uint8_t row, std::string text);
-    void Keylights(const uint8_t* data, int length);
 
     std::string GPColorToSLColorHex(int color);
     void SetButtonColor(uint8_t button, uint8_t color);
@@ -92,9 +90,6 @@ public:
     void ShowKnobCaption(uint8_t column, const std::string caption);
     void ShowKnobLabel(uint8_t column, const std::string caption);
 
-    // void DisplayWidgetValue(const SurfaceRow &Row, uint8_t column, std::string text, uint8_t value);
-    // void DisplayWidgetValue(const SurfaceRow &Row, uint8_t column, std::string text, double value);
-    // void DisplayWidgetValue(const SurfaceRow &Row, uint8_t column, std::string text, int value);
     void DisplayWidgetValue(const SurfaceRow &row, SurfaceWidget widget);
     void DisplayPresetLongname(const SurfaceRow& row, uint8_t column, std::string value);
 
@@ -163,8 +158,6 @@ public:
                     foundin = true;
                     validInPorts.push_back(name);
                     scriptLog("MCX:  Using midi in " + name, 0);
-                }
-                else if (name == SL_MIDI_KEYLIGHTS) { listenForMidi(getMidiInDeviceName(i), 1); scriptLog("SL:  Using SL Keylights", 0);
                 }
             }
         }
@@ -264,7 +257,7 @@ public:
         if (widget.IsSurfaceItemWidget)  // some widgets we listen for may not display on the control surface
         {
             // if the GP widget is not in the active bank on the control surface we don't need to display it
-            if ( widget.BankID == Surface.Row[widget.RowNumber].ActiveBankID())
+            if ( widget.BankID.compare(Surface.Row[widget.RowNumber].ActiveBankID()) == 0 && Surface.Row[widget.RowNumber].Showing == SHOW_BUTTONS)
             {
                 DisplayWidgetValue(Surface.Row[widget.RowNumber], widget);
                 // DisplayPresetLongname(Surface.Row[widget.RowNumber], widget.Column, widget.LongName + widget.TextValue);
@@ -281,15 +274,14 @@ public:
         // scriptLog("In " + deviceName, 1);
         if (IsButton(data, length)) {
 
-
-            sprintf_s(str, "Received button event: ");
+            /* sprintf_s(str, "Received button event: ");
             for (auto x = 0; x < length; x++)
             {
                 sprintf_s(extra, " %0x", data[x]);
                 strcat_s(str, extra);
             }
             scriptLog(str, 1);
-            scriptLog(deviceName, 1);
+            scriptLog(deviceName, 1); */
 
             ProcessButton(data[1], data[2]);  // it's a button press
         }
@@ -407,7 +399,7 @@ public:
         {
             for (index = 0; index < row.BankIDs.size(); ++index)
             {
-                widgetname = row.WidgetPrefix + (std::string)"_" + row.BankIDs[index] + (std::string)"_b";
+                widgetname = row.WidgetPrefix + (std::string)"_" + row.BankIDs[index] + (std::string)"_i";
                 // scriptLog("sAFB sees " + widgetname + (std::string)" as " + std::to_string(getWidgetValue(widgetname)), 1);
                 if (widgetExists(widgetname))
                 {
@@ -452,11 +444,11 @@ public:
         // setActiveBank(Surface.Row[KNOB_ROW]);
         // DisplayRow(Surface.Row[KNOB_ROW]);
 
-        setActiveBank(Surface.Row[BOTTOM_ROW]);
-        DisplayRow(Surface.Row[BOTTOM_ROW]);
-
         setActiveBank(Surface.Row[TOP_ROW]);
         DisplayRow(Surface.Row[TOP_ROW]);
+        
+        setActiveBank(Surface.Row[BOTTOM_ROW]);
+        DisplayRow(Surface.Row[BOTTOM_ROW]);
 
         setActiveBank(Surface.Row[B2_ROW]);
         DisplayRow(Surface.Row[B2_ROW]);
@@ -486,13 +478,14 @@ public:
         // setActiveBank(Surface.Row[KNOB_ROW]);
         // DisplayRow(Surface.Row[KNOB_ROW]);
 
-        // setActiveBank(Surface.Row[BOTTOM_ROW]);
+        setActiveBank(Surface.Row[BOTTOM_ROW]);
         DisplayRow(Surface.Row[BOTTOM_ROW]);
 
-        // setActiveBank(Surface.Row[TOP_ROW]);
+        setActiveBank(Surface.Row[TOP_ROW]);
         DisplayRow(Surface.Row[TOP_ROW]);
         DisplayRow(Surface.Row[B2_ROW]);
         DisplayRow(Surface.Row[T2_ROW]);
+        LongPresetNames(getVariationName(getCurrentRackspaceIndex(), newIndex));
 
         // read variation name and post it in a Notify to the SL MKIII
         // Notify("Variation: " + newIndex);
