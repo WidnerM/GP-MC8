@@ -73,7 +73,6 @@ void LibMain::PresetShortName(std::string text, uint8_t position)
 // sets preset long name name at position
 void LibMain::PresetLongName(std::string text, uint8_t position)
 {
-
     std::string cleantext = cleanSysex(text) + (std::string) "                          ";
     SendTextToMCx(cleantext.substr(0, 24), 0x03, position, 0x00);
 }
@@ -81,7 +80,7 @@ void LibMain::PresetLongName(std::string text, uint8_t position)
 // sets all preset Long Names to this so it stays on screen regardless of current preset
 void LibMain::LongPresetNames(std::string text)
 {
-    for (uint8_t x = 0; x < 8; x++)
+    for (uint8_t x = 0; x < 22; x++)
         PresetLongName(text, x);
 }
 

@@ -20,6 +20,7 @@
 
 #define MCX_BUTTON_ACTION 0x00
 #define MCX_ROW_ACTION 0x01
+#define MCX_AUX_ACTION 0x02
 
 #define MCX_ACTION_DOWN 0x00
 #define MCX_ACTION_SELECT 0x01
@@ -41,8 +42,9 @@
 #define MCX_T2_BANK_UP 39
 #define MCX_B2_SELECT 40
 #define MCX_T2_SELECT 41
-#define MCX_PAGE1 50
-#define MCX_PAGE2 51
+
+#define MCX_PAGE1 40
+#define MCX_PAGE2 41
 
 
 #define MKIII_KNOB_BASE         0x15

@@ -2,8 +2,8 @@
 
 
 // List of panels
-std::vector<std::string> panelNames = { "MCU to OSC" };
-std::vector<std::string> relativePanelLocations = { "MCU2OSC.gppanel" };
+std::vector<std::string> panelNames = { "MC8 Demo" };
+std::vector<std::string> relativePanelLocations = { "MC8 Demo.gppanel" };
 
 
 std::string pathToMe; // This needs to be initialized from the initialization secttion of the LibMain class so it can be used in the standalone functions directly below
@@ -38,7 +38,7 @@ std::string  LibMain::GetPanelXML(int index)
 
 
 // List of menu items
-std::vector<std::string> menuNames = { "SLMKII Item One", "SLMKII Item One", "Re-initialize extention" };
+std::vector<std::string> menuNames = { "MC8 Item One", "MC8 Item Two", "Re-initialize extention" };
 
 
 int LibMain::GetMenuCount()
@@ -78,7 +78,7 @@ void LibMain::InvokeMenu(int index)
             }
             break;
         case 1:
-            scriptLog("Nothing here really.", 0);
+            scriptLog("Nothing here.", 0);
             break;
         case 2:
             SetMidiInOutDevices();

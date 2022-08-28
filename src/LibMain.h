@@ -94,7 +94,7 @@ public:
     void DisplayPresetLongname(const SurfaceRow& row, uint8_t column, std::string value);
 
     void DisplayRow(SurfaceRow row);
-    void DisplayVariations(SurfaceRow row, uint8_t firstbutton, uint8_t number, bool forcetocurrent);
+    void DisplayVariations(SurfaceRow & row, uint8_t firstbutton, uint8_t number, bool forcetocurrent);
     void DisplayRacks(SurfaceRow row, uint8_t firstbutton, uint8_t number, bool forcetocurrent);
 
     void ClearDisplayRow(SurfaceRow row);
@@ -361,7 +361,7 @@ public:
 
             std::vector< std::string> name_segments = ParseWidgetName(widgetname, '_');
 
-            scriptLog("MCx sees widget " + widgetname, 1);
+            // scriptLog("MCx sees widget " + widgetname, 1);
 
             if (name_segments.size() == 4)
             {
@@ -373,7 +373,7 @@ public:
                 // if it's a widget we're interested in, add a bank for it if it doesn't already exist, and listen for it
                 if (prefix.compare(THIS_PREFIX) == 0 && bank.compare("active") != 0)  // we don't listen for "active" bank widgets, which are generally just for linking to an OSC display
                 {
-                    if (Surface.addSurfaceBank(type, bank) == true) {  scriptLog("MCx:  bS added bank for " + widgetname, 1); }
+                    if (Surface.addSurfaceBank(type, bank) == true) {  /* scriptLog("MCx:  bS added bank for " + widgetname, 1); */ }
                     // we don't listen for bank select widgets or anything else without an integer in the column field
                     if (column == std::to_string(std::stoi("0" + column)) ) { listenForWidget(widgetname, true); }
                 }
@@ -460,10 +460,12 @@ public:
         if (inSetlistMode() == true)
         {
             CurrentBankName(getSongName(getCurrentSongIndex()));
+            LongPresetNames(getSongpartName(getCurrentSongIndex(), getCurrentSongpartIndex()));
         }
         else
         {
             CurrentBankName(getRackspaceName(getCurrentRackspaceIndex()));
+            LongPresetNames(getVariationName(getCurrentRackspaceIndex(), getCurrentVariationIndex()));
         }
     } 
 
@@ -530,17 +532,17 @@ public:
     // Initialization of the dll plugin
     void Initialization() override
        {
-            // Do any initialization that you need
-            // scriptLog("Path to me = " + getPathToMe(), 1);
-            Surface.syncState = 1;
-            InitializeMC8();
+        // Do any initialization that you need
+        // scriptLog("Path to me = " + getPathToMe(), 1);
+        Surface.Initialize();
+        Surface.syncState = 1;
+        InitializeMC8();
               
-            // Finally, register all the methods that you are going to actually use, i.e, the ones you declared above as override
-            registerCallback("OnOpen");
-            registerCallback("OnStatusChanged");
-            registerCallback("OnMidiDeviceListChanged");
-            registerCallback("OnClose");
-
+        // Register callabacks
+        registerCallback("OnOpen");
+        registerCallback("OnStatusChanged");
+        registerCallback("OnMidiDeviceListChanged");
+        registerCallback("OnClose");
        }
 
     // Generally don't touch this - simply define the constant 'XMLProductDescription' at the top of this file with

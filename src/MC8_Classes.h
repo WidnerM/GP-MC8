@@ -234,6 +234,7 @@ public:
 
 	uint8_t DisplayLayout = KNOB_LAYOUT; // Not sure if we're going to use this at all 
 	uint8_t SideMode = SHOW_BUTTONS;
+	uint8_t Page = 0;
 
 	// FirstShown[x] is used to remember what number is the first shown on the display if we're paging through songs/parts/racks/variations
 	// if both Bottom and Top row are displaying the same thing we'll display 8 consecutive rather than different starts for each row

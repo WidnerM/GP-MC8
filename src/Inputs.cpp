@@ -42,16 +42,34 @@ void LibMain::ProcessButton(uint8_t button, uint8_t value)  // processes a midi 
 {
     if (value == 127 && button <= 0x3f) // only process button down
     {
+        // this is set up so that low 2 bits are switch position (0-3), next two are row (0-3)
+        // and fifth bit indicates it's a secondary action, such as double tap or long press release.
+        // secondary actions are up/down/row select
+        // a row can display buttons, songs/racks, or variations/songparts, which the "row select" botton will cycle between
         uint8_t thisposition = button & 0x03;
         uint8_t thisrow = (button >> 2) & 03;
         uint8_t thisaction = (button >> 4) & 03;
         scriptLog("Process button- position:" + std::to_string(thisposition) + "  row:" + std::to_string(thisrow) + "  action:" + std::to_string(thisaction), 1);
 
-        if (thisaction == MCX_BUTTON_ACTION)
+        if (thisaction == MCX_AUX_ACTION)
+        {
+            // the Aux buttons will duplicate the ROW_ACTION buttons, but we need to adjust for which Page the MC8 bank is on
+            if (button == MCX_PAGE1) Surface.Page = 0;
+            else if (button == MCX_PAGE2) Surface.Page = 1;
+            else
+            {
+                thisrow = thisrow + Surface.Page * 8;
+                thisaction = MCX_ROW_ACTION;
+                scriptLog("Process button- position:" + std::to_string(thisposition) + "  row:" + std::to_string(thisrow) + "  action:" + std::to_string(thisaction) + "  page:" + std::to_string(Surface.Page), 1);
+
+            }
+        }
+        else if (thisaction == MCX_BUTTON_ACTION)
         {
             ToggleButton(button);
         }
-        else if (thisaction == MCX_ROW_ACTION)
+
+        if (thisaction == MCX_ROW_ACTION)
         {
             switch (thisposition) // thisposition items are coded for ACTION_DOWN, ACTION_UP, ACTION_SELECT
             {

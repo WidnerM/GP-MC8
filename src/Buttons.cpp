@@ -85,7 +85,7 @@ std::string LibMain::makeVariationText(SurfaceRow row, int index)
 }
 
 // this displays Racks/Variations/Songs/Songparts
-void LibMain::DisplayVariations(SurfaceRow row, uint8_t firstbutton, uint8_t number, bool forcetocurrent)
+void LibMain::DisplayVariations(SurfaceRow & row, uint8_t firstbutton, uint8_t number, bool forcetocurrent)
 {
     std::string variationname = "";
     int x, positionindex, current = 0, count = 1;
