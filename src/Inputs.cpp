@@ -54,13 +54,21 @@ void LibMain::ProcessButton(uint8_t button, uint8_t value)  // processes a midi 
         if (thisaction == MCX_AUX_ACTION)
         {
             // the Aux buttons will duplicate the ROW_ACTION buttons, but we need to adjust for which Page the MC8 bank is on
-            if (button == MCX_PAGE1) Surface.Page = 0;
-            else if (button == MCX_PAGE2) Surface.Page = 1;
-            else
+            if (button == MCX_PAGE1 && Surface.Page == 1)
             {
-                thisrow = thisrow + Surface.Page * 8;
+                Surface.Page = 0;
+                SendTextToMCx("", 0x00, 0x02, 0x00); // page toggle
+            }
+            else if (button == MCX_PAGE2 && Surface.Page == 0)
+            {
+                Surface.Page = 1;
+                SendTextToMCx("", 0x00, 0x02, 0x00); // page toggle
+            }
+            else if (button < MCX_PAGE1)
+            {
+                thisrow = thisrow + Surface.Page * 2;
                 thisaction = MCX_ROW_ACTION;
-                scriptLog("Process button- position:" + std::to_string(thisposition) + "  row:" + std::to_string(thisrow) + "  action:" + std::to_string(thisaction) + "  page:" + std::to_string(Surface.Page), 1);
+                // scriptLog("Process button- position:" + std::to_string(thisposition) + "  row:" + std::to_string(thisrow) + "  action:" + std::to_string(thisaction) + "  page:" + std::to_string(Surface.Page), 1);
 
             }
         }

@@ -84,6 +84,12 @@ std::string LibMain::makeVariationText(SurfaceRow row, int index)
     return fullname.substr(0,9);
 }
 
+// as of now there's no difference between DisplayRacks and DisplayVariations
+void LibMain::DisplayRacks(SurfaceRow& row, uint8_t firstbutton, uint8_t number, bool forcetocurrent)
+{
+    DisplayVariations(row, firstbutton, number, forcetocurrent);
+}
+
 // this displays Racks/Variations/Songs/Songparts
 void LibMain::DisplayVariations(SurfaceRow & row, uint8_t firstbutton, uint8_t number, bool forcetocurrent)
 {
@@ -128,7 +134,7 @@ void LibMain::DisplayVariations(SurfaceRow & row, uint8_t firstbutton, uint8_t n
     {
         if (row.FirstShown >= count)
         {
-            row.FirstShown = count - count % 4; // firstshown is zero based, count can be 0 only if there are no songs
+            row.FirstShown = count - 4 - count % 4; // firstshown is zero based, count can be 0 only if there are no songs
         }
         if (row.FirstShown < 0)
         {

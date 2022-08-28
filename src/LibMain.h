@@ -23,7 +23,7 @@ const std::string XMLProductDescription =
      // Replace with your information            
     "<Library>" 
     "<Product Name=\"MC8 Extension\" Version=\"1.0\" BuildDate=\"8/21/2022\"></Product> "
-    "<Description>Control Integration for MC8</Description>"
+    "<Description>Control Integration for Morningstar MC8</Description>"
     "</Library>"; 
 
 
@@ -95,7 +95,7 @@ public:
 
     void DisplayRow(SurfaceRow row);
     void DisplayVariations(SurfaceRow & row, uint8_t firstbutton, uint8_t number, bool forcetocurrent);
-    void DisplayRacks(SurfaceRow row, uint8_t firstbutton, uint8_t number, bool forcetocurrent);
+    void DisplayRacks(SurfaceRow & row, uint8_t firstbutton, uint8_t number, bool forcetocurrent);
 
     void ClearDisplayRow(SurfaceRow row);
 
@@ -115,10 +115,6 @@ public:
     bool RowNextBank(SurfaceRow & row);
     bool RowPreviousBank(SurfaceRow & row);
 
-
-    // from Songs.cpp file, functions having to do with song management
-    void DisplayBottom(bool forcetocurrent);
-    void makeBottomText(int index, std::string& TopLine, std::string& BottomLine);
 
     // from Knobs.cpp
     void DisplayKnobs(SurfaceRow row);  // Shows the active knob bank (as stored in Surface.Row[].ActiveBank)
@@ -523,9 +519,14 @@ public:
         std::string hexstring, binstring;
         uint8_t x;
 
-        ClearDisplayRow(Surface.Row[TOP_ROW]);
         ClearDisplayRow(Surface.Row[BOTTOM_ROW]);
+        ClearDisplayRow(Surface.Row[TOP_ROW]);
+        ClearDisplayRow(Surface.Row[B2_ROW]);
+        ClearDisplayRow(Surface.Row[T2_ROW]);
         CurrentBankName("GigPerformer Extension");
+        if (Surface.Page == 1) {
+            SendTextToMCx("", 0x00, 0x02, 0x00); // page toggle
+        }
 
     }
 

@@ -20,7 +20,6 @@ target_sources(
   ${PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_LIST_DIR}/src/LibMain.cpp"
                           "${CMAKE_CURRENT_LIST_DIR}/src/LibMain.h"
                           "${CMAKE_CURRENT_LIST_DIR}/src/Display.cpp"
-                          "${CMAKE_CURRENT_LIST_DIR}/src/Songlist.cpp"
                           "${CMAKE_CURRENT_LIST_DIR}/src/Inputs.cpp"
                           "${CMAKE_CURRENT_LIST_DIR}/src/Knobs.cpp"
                           "${CMAKE_CURRENT_LIST_DIR}/src/Buttons.cpp"
