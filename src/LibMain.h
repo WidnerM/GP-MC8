@@ -442,7 +442,7 @@ public:
                 {
                     scriptLog("sizeof list:" + std::to_string(sizeof(widgetlist)) + "  row:" + std::to_string(row), 1);
                     if (widgetlist[row] == "buttons") Surface.Row[row].Showing = SHOW_BUTTONS;
-                    else if (widgetlist[row] == "varaitions") Surface.Row[row].Showing = SHOW_VARS_PARTS;
+                    else if (widgetlist[row] == "variations") Surface.Row[row].Showing = SHOW_VARS_PARTS;
                     else if (widgetlist[row] == "racks") Surface.Row[row].Showing = SHOW_RACKS_SONGS;
                 }
             }

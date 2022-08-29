@@ -10,7 +10,7 @@
 #define MIDI_CC_16              0xB0
 #define NOTE_ON_16				0x9f
 #define MCX_BUTTON_BASE 0x00
-#define MCX_BUTTON_MAX 0x27
+#define MCX_BUTTON_MAX 0x29
 #define MCX_BUTTON_B1 0x00
 #define MCX_BUTTON_T1 0x04
 #define MCX_BUTTON_B2 0x08
