@@ -433,6 +433,21 @@ public:
         widgetlist.insert(widgetlist.end(), globalwidgetlist.begin(), globalwidgetlist.end());
         buildSurfaceModel(widgetlist);
 
+        if (widgetExists(MCX_CONFIG_WIDGETNAME))
+        {
+            widgetlist = ParseWidgetName(getWidgetCaption(MCX_CONFIG_WIDGETNAME), '_');
+            for (row = 0; row < Surface.NumRows; row++)
+            {
+                if (row < widgetlist.size())
+                {
+                    scriptLog("sizeof list:" + std::to_string(sizeof(widgetlist)) + "  row:" + std::to_string(row), 1);
+                    if (widgetlist[row] == "buttons") Surface.Row[row].Showing = SHOW_BUTTONS;
+                    else if (widgetlist[row] == "varaitions") Surface.Row[row].Showing = SHOW_VARS_PARTS;
+                    else if (widgetlist[row] == "racks") Surface.Row[row].Showing = SHOW_RACKS_SONGS;
+                }
+            }
+        }
+
         // scriptLog("SL identified " + std::to_string(Surface.Row[KNOB_ROW].BankIDs.size()) + " knob banks", 1);
         // scriptLog("SL identified " + std::to_string(Surface.Row[BUTTON_ROW].BankIDs.size()) + " button banks", 1);
 
@@ -481,19 +496,22 @@ public:
 
         setActiveBank(Surface.Row[TOP_ROW]);
         DisplayRow(Surface.Row[TOP_ROW]);
+
+        setActiveBank(Surface.Row[B2_ROW]);
         DisplayRow(Surface.Row[B2_ROW]);
+
+        setActiveBank(Surface.Row[T2_ROW]);
         DisplayRow(Surface.Row[T2_ROW]);
+
         LongPresetNames(getVariationName(getCurrentRackspaceIndex(), newIndex));
 
-        // read variation name and post it in a Notify to the SL MKIII
         // Notify("Variation: " + newIndex);
-
     }
 
     void OnSongPartChanged(int oldIndex, int newIndex) override
     {
         // scriptLog("Songpart Changed", 1);
-        // if (Surface.BottomMode == SHOW_SONGPARTS) { DisplayBottom(true); }
+        LongPresetNames(getSongpartName(getCurrentSongIndex(), newIndex));
     }
 
 
