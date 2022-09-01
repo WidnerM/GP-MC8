@@ -203,22 +203,42 @@ public:
 
             SetMidiInOutDevices();
 
-            Surface.BottomMode = inSetlistMode() ? SHOW_SONGS : SHOW_RACKSPACES;
-            Surface.FirstShown[SHOW_SONGS] = 0;
-            Surface.FirstShown[SHOW_SONGPARTS] = 0;
-            Surface.FirstShown[SHOW_RACKSPACES] = 0;
-            Surface.FirstShown[SHOW_VARIATIONS] = 0;
 
-            if (inSetlistMode())  // we have the "Clear" button on the MK3 toggling in and out of Setlist mode.  Orange is in Setlist mode, Purple if not.
-            {
+
+//            Surface.BottomMode = inSetlistMode() ? SHOW_SONGS : SHOW_RACKSPACES;
+//            Surface.FirstShown[SHOW_SONGS] = 0;
+//            Surface.FirstShown[SHOW_SONGPARTS] = 0;
+//            Surface.FirstShown[SHOW_RACKSPACES] = 0;
+//            Surface.FirstShown[SHOW_VARIATIONS] = 0;
+
+//            if (inSetlistMode())  // we have the "Clear" button on the MK3 toggling in and out of Setlist mode.  Orange is in Setlist mode, Purple if not.
+//            {
                 // SetButtonColor(MKIII_CLEAR, Surface.BottomColor[SHOW_RACKSPACES]);
-            }
-            else
-            {
+//            }
+//            else
+//            {
                 // SetButtonColor(MKIII_CLEAR, Surface.BottomColor[SHOW_SONGS]);
-            }
+//            }
 
             // DisplayBottom(true);
+
+            // We look for this INITIAL_CONFIG widget one time when the gig has finished loading
+            // if this is the only row configuration widget used then changes made during use will persist through rackspace changes
+            if (widgetExists(MCX_INITIAL_CONFIG_WIDGETNAME))
+            {
+                std::vector <std::string> name_segments = ParseWidgetName(getWidgetCaption(MCX_INITIAL_CONFIG_WIDGETNAME), '_');
+                for (uint8_t row = 0; row < Surface.NumRows; row++)
+                {
+                    if (row < name_segments.size())
+                    {
+                        // scriptLog("sizeof list:" + std::to_string(sizeof(widgetlist)) + "  row:" + std::to_string(row), 1);
+                        if (name_segments[row] == "buttons") Surface.Row[row].Showing = SHOW_BUTTONS;
+                        else if (name_segments[row] == "variations") Surface.Row[row].Showing = SHOW_VARS_PARTS;
+                        else if (name_segments[row] == "racks") Surface.Row[row].Showing = SHOW_RACKS_SONGS;
+                    }
+                }
+            }
+
             OnRackspaceActivated();  // We call this to set everything up for the current Rackspace after initial Gig is loaded
         }
     }

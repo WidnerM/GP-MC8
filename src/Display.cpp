@@ -223,7 +223,7 @@ void LibMain::DisplayRow(SurfaceRow row)
     ResetBankIndicators(row);
     // if (row.WidgetID.compare(BOTTOM_TAG) == 0 )
     {
-        scriptLog("DisplayRow: row=" + row.WidgetID + " Showing=" + std::to_string(row.Showing), 1);
+        // scriptLog("DisplayRow: row=" + row.WidgetID + " Showing=" + std::to_string(row.Showing), 1);
         switch (row.Showing)
         {
         case SHOW_BUTTONS:

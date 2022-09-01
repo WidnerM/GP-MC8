@@ -29,6 +29,7 @@
 #define MCX_MIDI_OUT "MIDIOUT2 (Morningstar MC8)"
 #define MIDI_OUT_WIDGETNAME "mcx_midiout"
 #define MCX_CONFIG_WIDGETNAME "mcx_row_config"
+#define MCX_INITIAL_CONFIG_WIDGETNAME "mcx_initial_row_config"
 
 #define KNOB "k"
 #define FADER "f"

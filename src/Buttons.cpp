@@ -80,7 +80,7 @@ std::string LibMain::makeVariationText(SurfaceRow row, int index)
             fullname = getSongpartName(getCurrentSongIndex(), index);
     }
  
-    scriptLog("fullname = " + fullname, 1);
+    // scriptLog("fullname = " + fullname, 1);
     return fullname.substr(0,9);
 }
 
@@ -134,7 +134,7 @@ void LibMain::DisplayVariations(SurfaceRow & row, uint8_t firstbutton, uint8_t n
     {
         if (row.FirstShown >= count)
         {
-            row.FirstShown = count - 4 - count % 4; // firstshown is zero based, count can be 0 only if there are no songs
+            row.FirstShown = count - (count % 4); // firstshown is zero based, count can be 0 only if there are no songs
         }
         if (row.FirstShown < 0)
         {

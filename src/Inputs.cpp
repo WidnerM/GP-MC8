@@ -49,7 +49,7 @@ void LibMain::ProcessButton(uint8_t button, uint8_t value)  // processes a midi 
         uint8_t thisposition = button & 0x03;
         uint8_t thisrow = (button >> 2) & 03;
         uint8_t thisaction = (button >> 4) & 03;
-        scriptLog("Process button- position:" + std::to_string(thisposition) + "  row:" + std::to_string(thisrow) + "  action:" + std::to_string(thisaction), 1);
+        // scriptLog("Process button- position:" + std::to_string(thisposition) + "  row:" + std::to_string(thisrow) + "  action:" + std::to_string(thisaction), 1);
 
         if (thisaction == MCX_AUX_ACTION)
         {
