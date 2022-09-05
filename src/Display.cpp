@@ -235,7 +235,9 @@ void LibMain::DisplayRow(SurfaceRow row)
         case SHOW_VARS_PARTS:
             DisplayVariations(row, 0, 4, true);
             break;
-
+        case SHOW_KNOBS:
+            DisplayKnobs(row);
+            break;
         }
     }
     // else if (row.Type == BUTTON_TYPE ) DisplayButtons(row, 0, 4);

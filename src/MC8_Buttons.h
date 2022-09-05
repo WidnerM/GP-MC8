@@ -1,9 +1,11 @@
 // Morningstar MC8 button assignments
 // we view the MC8 as a series of rows with buttons in banks of 4
-// we use the two least significant bits as button number (0-4, left to right)
+// we use the two least significant bits as button number (0-3, left to right)
 // the next two bits are the row (00 = bottom page one, 01 = top page one, 10 = bottom page 2, 11 = top page 2)
-// bit four indicates whether it's a bank message button or just regular button push
-// bank message buttons are 00 = down, 01 = up, 10 = select, 11 = TBD
+// bits four and five indicates an extended message type:  00 = regular button, 01 = long press (bank change functions), 10 = aux buttons
+// bank message buttons are 00 = down, 01 = select, 10 = TBD, 11 = up
+// bit six indicates it's an expression pedal, with pedal number (0-3) on the two least significant bits
+// note - omniport jacks 1 & 2 must be used for aux switches if aux switches are to be used.  
 
 #pragma once
 
@@ -15,8 +17,10 @@
 #define MCX_BUTTON_T1 0x04
 #define MCX_BUTTON_B2 0x08
 #define MCX_BUTTON_T2 0x0C
-#define MCX_BUTTON_E3 0x10
-#define MCX_BUTTON_E4 0x13
+#define MCX_KNOB_1	0x40
+#define MCX_KNOB_2	0x40
+#define MCX_KNOB_3	0x40
+#define MCX_KNOB_4	0x43
 
 #define MCX_BUTTON_ACTION 0x00
 #define MCX_ROW_ACTION 0x01
@@ -27,24 +31,9 @@
 #define MCX_ACTION_OTHER 0x02
 #define MCX_ACTION_UP 0x03
 
+#define MCX_PAGE1 0x28
+#define MCX_PAGE2 0x29
 
-// these aren't correct anymore...
-#define MCX_BOTTOM_BANK_DOWN 30
-#define MCX_BOTTOM_BANK_UP 31
-#define MCX_TOP_BANK_DOWN 32
-#define MCX_TOP_BANK_UP 33
-#define MCX_BOTTOM_SELECT 34
-#define MCX_TOP_SELECT 35
-
-#define MCX_B2_BANK_DOWN 36
-#define MCX_B2_BANK_UP 37
-#define MCX_T2_BANK_DOWN 38
-#define MCX_T2_BANK_UP 39
-#define MCX_B2_SELECT 40
-#define MCX_T2_SELECT 41
-
-#define MCX_PAGE1 40
-#define MCX_PAGE2 41
 
 
 #define MKIII_KNOB_BASE         0x15

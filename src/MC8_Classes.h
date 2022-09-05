@@ -15,19 +15,20 @@
 #define TOP_PREFIX "mcx_t"
 #define B2_PREFIX "mcx_b2"
 #define T2_PREFIX "mcx_t2"
+#define E1_PREFIX "mcx_e1"
+#define E2_PREFIX "mcx_e2"
 #define E3_PREFIX "mcx_e3"
 #define E4_PREFIX "mcx_e4"
 #define KNOB_PREFIX "mcx_k"
-#define FADER_PREFIX "mcx_f"
 
-#define ROW_PREFIX_ARRAY { BOTTOM_PREFIX, TOP_PREFIX, B2_PREFIX, T2_PREFIX, E3_PREFIX, E4_PREFIX}
+#define ROW_PREFIX_ARRAY { BOTTOM_PREFIX, TOP_PREFIX, B2_PREFIX, T2_PREFIX, E1_PREFIX, E2_PREFIX, E3_PREFIX, E4_PREFIX}
 
 #define KNOB_TYPE "Knob"
 #define BUTTON_TYPE "Button"
 #define FADER_TYPE "Fader"
 #define PAD_TYPE "Pad"
-#define ROW_TYPE_ARRAY { BUTTON_TYPE, BUTTON_TYPE, BUTTON_TYPE, BUTTON_TYPE, BUTTON_TYPE, BUTTON_TYPE  }
-#define ROW_LABEL_ARRAY   {  "Button", "Button", "Button", "Button", "Button", "Button" }
+#define ROW_TYPE_ARRAY { BUTTON_TYPE, BUTTON_TYPE, BUTTON_TYPE, BUTTON_TYPE, KNOB_TYPE, KNOB_TYPE, KNOB_TYPE, KNOB_TYPE  }
+#define ROW_LABEL_ARRAY   {  "Button", "Button", "Button", "Button", "Knob", "knob", "Knob", "knob" }
 
 #define KNOB_TAG "k"
 #define BUTTON_TAG "n"
@@ -37,16 +38,20 @@
 #define TOP_TAG "t"
 #define B2_TAG "b2"
 #define T2_TAG "t2"
+#define E1_TAG "e1"
+#define E2_TAG "e2"
 #define E3_TAG "e3"
 #define E4_TAG "e4"
-#define TAG_ARRAY  { BOTTOM_TAG, TOP_TAG, B2_TAG, T2_TAG, E3_TAG, E4_TAG }
+#define TAG_ARRAY  { BOTTOM_TAG, TOP_TAG, B2_TAG, T2_TAG, E1_TAG, E2_TAG, E3_TAG, E4_TAG }
 
 #define BOTTOM_ROW 0
 #define TOP_ROW 1
 #define B2_ROW 2
 #define T2_ROW 3
-#define E3_ROW 4
-#define E4_ROW 5
+#define E1_ROW 4
+#define E2_ROW 5
+#define E3_ROW 6
+#define E4_ROW 7
 
 #define KNOB_ROW 0
 #define BUTTON_ROW 1
@@ -57,14 +62,9 @@
 #define SHOW_BUTTONS 4
 #define SHOW_RACKS_SONGS 2
 #define SHOW_VARS_PARTS 3
+#define SHOW_KNOBS 1
 
-#define SHOW_SONGS 0
-#define SHOW_SONGPARTS 1
-#define SHOW_RACKSPACES 2
-#define SHOW_VARIATIONS 3
 
-#define SHOW_ALLVARIATIONS 5
-#define SHOW_LABELS 6
 
 #define SONGLIST_UP MKIII_TRACK_LEFT
 #define SONGLIST_DOWN MKIII_TRACK_RIGHT
@@ -117,7 +117,7 @@ public:
 	uint8_t Showing = SHOW_BUTTONS; // whether we show buttons, Racks/Songs, or Variations/Parts
     int FirstShown = 0;
 	uint8_t Columns = 4;
-	uint8_t MidiCommand = 0x9f; // midi command from the control surface that corresponds to this row
+	// uint8_t MidiCommand = 0x9f; // midi command from the control surface that corresponds to this row
 	uint8_t FirstID = 0;  // the first ID that corresponds to the row, eg. note number 0x64.  Elements of a control row must have sequential IDs
 	uint8_t FirstIDsysex = 0;  // the first ID if we address it using sysex instead of NoteOn/CC
     int LitColor = 0x4F0000, DimColor = 0x100000;
@@ -224,8 +224,8 @@ public:
 class SurfaceClass
 {
 public:
-	SurfaceRow Row[6]; // We define the control rows as bottom and top of display, plus a button row for each of the four possible externals
-	uint8_t NumRows = 6;
+	SurfaceRow Row[8]; // We define the control rows as bottom and top of display, plus a button row for each of the four possible externals
+	uint8_t NumRows = 8;
 
 	bool RowsLinked = false; // MCx this controls display of 2 rows of four (false), or one group of 8 (true)
 
@@ -238,19 +238,12 @@ public:
 
 	// FirstShown[x] is used to remember what number is the first shown on the display if we're paging through songs/parts/racks/variations
 	// if both Bottom and Top row are displaying the same thing we'll display 8 consecutive rather than different starts for each row
-    uint8_t FirstShown[BOTTOM_MODES] = {0, 0, 0, 0, 0};
+	uint8_t FirstShown[BOTTOM_MODES] = { 0, 0, 0, 0, 0 };
 	uint8_t BottomColor[BOTTOM_MODES] = { SLMKIII_ORANGE, SLMKIII_BLUE, SLMKIII_PURPLE, SLMKIII_MINT, SLMKIII_GREEN };
 	uint8_t BottomHalfColor[BOTTOM_MODES] = { SLMKIII_ORANGE_HALF, SLMKIII_BLUE_HALF, SLMKIII_PURPLE_HALF, SLMKIII_MINT_HALF, SLMKIII_GREEN_HALF };
 
 
 	int syncState = 0;  // is our current model in sync with the device.  semi-deprecated
-
-	// following are not presently implemented.  The idea is to use the main displays to show things other than the knobs.  e.g., song list, pad assignments, etc
-	int ToggleDisplayLayout() { if (DisplayLayout == KNOB_LAYOUT) DisplayLayout = BOX_LAYOUT; else DisplayLayout = KNOB_LAYOUT; return DisplayLayout; }
-	void GotoSongMode() { BottomMode = SHOW_SONGS; }
-	void GotoKnobViewMode() { DisplayLayout = KNOB_LAYOUT; }
-	void GotoPadViewMode() { DisplayLayout = BOX_LAYOUT; }
-	void GotoButtonViewMode() { DisplayLayout = BOX_LAYOUT; }
 
 	// Initialize the surface class as required - specific to a particular control surface
 	bool Initialize()
@@ -260,10 +253,10 @@ public:
 		std::string row_tags[] = TAG_ARRAY;
 		std::string row_types[] = ROW_TYPE_ARRAY;
 		std::string row_labels[] = ROW_LABEL_ARRAY;
-        int row_showing[] = {SHOW_BUTTONS, SHOW_VARS_PARTS, SHOW_RACKS_SONGS, SHOW_BUTTONS, SHOW_BUTTONS, SHOW_BUTTONS};
-        uint8_t midi_commands[] = {MIDI_CC_16, MIDI_CC_16, MIDI_CC_16, MIDI_CC_16, MIDI_CC_16, MIDI_CC_16};
-		int row_columns[] = { 4, 4, 4, 4, 3, 3 };
-        uint8_t first_midi[] = {MCX_BUTTON_B1, MCX_BUTTON_T1, MCX_BUTTON_B2, MCX_BUTTON_T2, MCX_BUTTON_E3, MCX_BUTTON_E4};
+        int row_showing[] = {SHOW_BUTTONS, SHOW_VARS_PARTS, SHOW_RACKS_SONGS, SHOW_BUTTONS, SHOW_KNOBS, SHOW_KNOBS, SHOW_KNOBS, SHOW_KNOBS };
+        uint8_t midi_commands[] = {MIDI_CC_16, MIDI_CC_16, MIDI_CC_16, MIDI_CC_16, MIDI_CC_16, MIDI_CC_16, MIDI_CC_16, MIDI_CC_16 };
+		int row_columns[] = { 4, 4, 4, 4, 1, 1, 1, 1 };
+        uint8_t first_midi[] = {MCX_BUTTON_B1, MCX_BUTTON_T1, MCX_BUTTON_B2, MCX_BUTTON_T2, 22, 23, 24, 25 };
 		// uint8_t first_sysex[] = { MKIII_KNOB_BASE, MKIII_BUTTON_BASE_SYSEX, MKIII_FADER_BASE_SYSEX, MKIII_PAD_BASE_SYSEX };
 
 		// basic Surface structure initializations
@@ -277,7 +270,7 @@ public:
 			Row[x].FirstID = first_midi[x];
             Row[x].Showing = row_showing[x];
 			// Row[x].FirstIDsysex = first_sysex[x];
-			Row[x].MidiCommand = midi_commands[x];
+			// Row[x].MidiCommand = midi_commands[x];
 		}
 
 		return true;

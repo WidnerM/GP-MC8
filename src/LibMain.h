@@ -102,15 +102,11 @@ public:
 
     // from Inputs.cpp
     void ProcessButton(uint8_t button, uint8_t value);
-    void ProcessPad(uint8_t button, uint8_t value);
     void ToggleButton(uint8_t button);
-    void ProcessKnob(uint8_t column, uint8_t value);
-    void ProcessFader(uint8_t column, uint8_t value);
+    void ProcessKnob(uint8_t row, uint8_t value);
 
     bool IsKnob(const uint8_t* data, int length);
-    bool IsFader(const uint8_t* data, int length);
     bool IsButton(const uint8_t* data, int length);
-    bool IsPad(const uint8_t* data, int length);
 
     bool RowNextBank(SurfaceRow & row);
     bool RowPreviousBank(SurfaceRow & row);
@@ -119,7 +115,6 @@ public:
     // from Knobs.cpp
     void DisplayKnobs(SurfaceRow row);  // Shows the active knob bank (as stored in Surface.Row[].ActiveBank)
     void ResetBankIndicators(SurfaceRow row);
-    void ClearKnobArea();
     uint8_t GetBankColor(SurfaceRow row, int bankindex);
     int GetBankRGBColor(SurfaceRow row, int bankindex);
 
@@ -272,7 +267,7 @@ public:
 
         if (widget.IsSurfaceItemWidget)  // some widgets we listen for may not display on the control surface
         {
-            // if the GP widget is not in the active bank on the control surface we don't need to display it
+            // if the GP widget is not a button in an active bank on the control surface we don't need to display it
             if ( widget.BankID.compare(Surface.Row[widget.RowNumber].ActiveBankID()) == 0 && Surface.Row[widget.RowNumber].Showing == SHOW_BUTTONS)
             {
                 DisplayWidgetValue(Surface.Row[widget.RowNumber], widget);
@@ -303,17 +298,8 @@ public:
         }
         else if (IsKnob(data, length))
         {
-            ProcessKnob(data[1] - MKIII_KNOB_1,
-                        data[2]); // pass the knob position (0-7) and the value (relative pos is usually 1 or 127)
-        }
-        else if (IsPad(data, length)) {
-            if (data[0] == 0x9f) // every pad press sends a note on with velocity followed by a note off on release.  We ignore the note off events.
-            {
-                ProcessPad(data[1], data[2]);
-            }
-        }
-        else if (IsFader(data, length)) {
-            ProcessFader(data[1] - MKIII_FADER_1, data[2]);
+            ProcessKnob(data[1] - MCX_KNOB_1,
+                        data[2]); // pass the pedal position (0-4) and the value
         }
         else
         {
@@ -460,7 +446,7 @@ public:
             {
                 if (row < widgetlist.size())
                 {
-                    scriptLog("sizeof list:" + std::to_string(sizeof(widgetlist)) + "  row:" + std::to_string(row), 1);
+                    // scriptLog("sizeof list:" + std::to_string(sizeof(widgetlist)) + "  row:" + std::to_string(row), 1);
                     if (widgetlist[row] == "buttons") Surface.Row[row].Showing = SHOW_BUTTONS;
                     else if (widgetlist[row] == "variations") Surface.Row[row].Showing = SHOW_VARS_PARTS;
                     else if (widgetlist[row] == "racks") Surface.Row[row].Showing = SHOW_RACKS_SONGS;
@@ -470,10 +456,6 @@ public:
 
         // scriptLog("SL identified " + std::to_string(Surface.Row[KNOB_ROW].BankIDs.size()) + " knob banks", 1);
         // scriptLog("SL identified " + std::to_string(Surface.Row[BUTTON_ROW].BankIDs.size()) + " button banks", 1);
-
-
-        // setActiveBank(Surface.Row[KNOB_ROW]);
-        // DisplayRow(Surface.Row[KNOB_ROW]);
 
         setActiveBank(Surface.Row[TOP_ROW]);
         DisplayRow(Surface.Row[TOP_ROW]);
@@ -487,6 +469,11 @@ public:
         setActiveBank(Surface.Row[T2_ROW]);
         DisplayRow(Surface.Row[T2_ROW]);
 
+        setActiveBank(Surface.Row[E3_ROW]);
+        DisplayRow(Surface.Row[E3_ROW]);
+
+        setActiveBank(Surface.Row[E4_ROW]);
+        DisplayRow(Surface.Row[E4_ROW]);
      
         if (inSetlistMode() == true)
         {
