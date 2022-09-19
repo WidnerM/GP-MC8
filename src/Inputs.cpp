@@ -112,16 +112,23 @@ void LibMain::ProcessButton(uint8_t button, uint8_t value)  // processes a midi 
                 switch (Surface.Row[thisrow].Showing)
                 {
                 case SHOW_BUTTONS:
+                    Surface.Row[thisrow].Showing = SHOW_RACKS_SONGS;
+                    DisplayVariations(Surface.Row[thisrow], 0, 4, true);
+                    break;
+                case SHOW_RACKS_SONGS:
                     Surface.Row[thisrow].Showing = SHOW_VARS_PARTS;
                     DisplayVariations(Surface.Row[thisrow], 0, 4, true);
                     break;
                 case SHOW_VARS_PARTS:
-                    Surface.Row[thisrow].Showing = SHOW_RACKS_SONGS;
-                    DisplayVariations(Surface.Row[thisrow], 0, 4, true);
-                    break;
-                default:
-                    Surface.Row[thisrow].Showing = SHOW_BUTTONS;
-                    DisplayRow(Surface.Row[thisrow]);
+                    if (Surface.Row[thisrow].BankValid()) {
+                        Surface.Row[thisrow].Showing = SHOW_BUTTONS;
+                        DisplayRow(Surface.Row[thisrow]);
+                    }
+                    else
+                    {
+                        Surface.Row[thisrow].Showing = SHOW_RACKS_SONGS;
+                        DisplayVariations(Surface.Row[thisrow], 0, 4, true);
+                    }
                     break;
                 }
                 break;
