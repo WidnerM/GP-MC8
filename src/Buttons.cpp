@@ -98,7 +98,7 @@ void LibMain::DisplayVariations(SurfaceRow & row, uint8_t firstbutton, uint8_t n
 
     if (row.Showing == SHOW_RACKS_SONGS)
     {
-        if (inSetlistMode())
+        if (inSetlistMode() == true)
         {
             current = getCurrentSongIndex();
             count = getSongCount();
@@ -111,7 +111,7 @@ void LibMain::DisplayVariations(SurfaceRow & row, uint8_t firstbutton, uint8_t n
     }
     else if (row.Showing == SHOW_VARS_PARTS)
     {
-        if (inSetlistMode())
+        if (inSetlistMode() == true)
         {
             current = getCurrentSongpartIndex();
             count = getSongpartCount(getCurrentSongIndex());
@@ -134,7 +134,7 @@ void LibMain::DisplayVariations(SurfaceRow & row, uint8_t firstbutton, uint8_t n
     {
         if (row.FirstShown >= count)
         {
-            row.FirstShown = count - (count % 4); // firstshown is zero based, count can be 0 only if there are no songs
+            row.FirstShown -= 4;
         }
         if (row.FirstShown < 0)
         {
