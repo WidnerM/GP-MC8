@@ -198,25 +198,6 @@ public:
 
             SetMidiInOutDevices();
 
-
-
-//            Surface.BottomMode = inSetlistMode() ? SHOW_SONGS : SHOW_RACKSPACES;
-//            Surface.FirstShown[SHOW_SONGS] = 0;
-//            Surface.FirstShown[SHOW_SONGPARTS] = 0;
-//            Surface.FirstShown[SHOW_RACKSPACES] = 0;
-//            Surface.FirstShown[SHOW_VARIATIONS] = 0;
-
-//            if (inSetlistMode())  // we have the "Clear" button on the MK3 toggling in and out of Setlist mode.  Orange is in Setlist mode, Purple if not.
-//            {
-                // SetButtonColor(MKIII_CLEAR, Surface.BottomColor[SHOW_RACKSPACES]);
-//            }
-//            else
-//            {
-                // SetButtonColor(MKIII_CLEAR, Surface.BottomColor[SHOW_SONGS]);
-//            }
-
-            // DisplayBottom(true);
-
             // We look for this INITIAL_CONFIG widget one time when the gig has finished loading
             // if this is the only row configuration widget used then changes made during use will persist through rackspace changes
             if (widgetExists(MCX_INITIAL_CONFIG_WIDGETNAME))
@@ -373,7 +354,7 @@ public:
                 column = name_segments[3];
 
                 // if it's a widget we're interested in, add a bank for it if it doesn't already exist, and listen for it
-                if (prefix.compare(THIS_PREFIX) == 0 && bank.compare("active") != 0)  // we don't listen for "active" bank widgets, which are generally just for linking to an OSC display
+                if (prefix.compare(THIS_PREFIX) == 0 )
                 {
                     if (Surface.addSurfaceBank(type, bank) == true) {  /* scriptLog("MCx:  bS added bank for " + widgetname, 1); */ }
                     // we don't listen for bank select widgets or anything else without an integer in the column field
