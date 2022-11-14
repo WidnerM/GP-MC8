@@ -20,8 +20,8 @@ endfunction(fetch_dependency)
 
 FetchContent_Declare(
   gp-sdk
- GIT_REPOSITORY https://github.com/gigperformer/gp-sdk.git
- GIT_TAG 3d4fa49c3d6f96851961893ce51896b4450e59ae # v46
+  GIT_REPOSITORY https://github.com/gigperformer/gp-sdk.git
+  GIT_TAG 3d4fa49c3d6f96851961893ce51896b4450e59ae # v46
 )
 fetch_dependency(gp-sdk)
 
