@@ -9,8 +9,8 @@ MC8 Banks have two pages, so it can effectively be viewed as four rows of four s
 At any given time each row can control widgets, Rackspaces, Songs, Variations, or Songparts.  A row can only show four items at a time,
 but what is shown can by cycled through any number of widgets, Songs, etc. through up and down buttons.
 
-In my normal use I have variations across the top row, FX toggles on the bottom row, and on page two I have the system functions: Play/Stop,
-Setlist mode on/off, Tap Tempo, and Tuner on the top row, and Rackspace selects on the bottom row.
+In my normal use I have variations across the top row, FX toggles on the bottom row on page one.  On page two I have Rackspace
+selects on the bottom row, and Play/Stop, Setlist mode on/off, Tap Tempo, and Tuner on the top row.
 
 
 
@@ -25,10 +25,10 @@ Widgets that will be utilized up by this extention must be named in the format:
 	mcx_[displayrow]_[bank ID]_i
 
 Valid [displayrow] fields are:
-	b for the bottom row of buttons and display on Page 1
 	t for the top row on Page 1
-	b2 for the bottom row on Page 2
+	b for the bottom row on Page 1
 	t2 for the top row on Page 2
+	b2 for the bottom row on Page 2
 
 Each row can be switched between any number of "banks" of buttons.  The "bank ID" field is used to identify different banks on each row.
 	If you have 8 different effects toggles you want to appear on the bottom row you could organize them into two groups of four and page between them.
@@ -42,12 +42,8 @@ Each of those widgets can have an associated 'p' (for "parameter") widget.  e.g.
 
 
 
-Each bank of controls has an associated "_i" widget that defines the color(s) and names to display on the SL MK3 screens
+Each bank of controls has an associated "_i" widget that can be used to provide feedback on the GP rackspace screen
 	Text widgets in GP are generally the most useful for these
-		The Caption of the widget will appear on the SL MK3 display, showin in the form of "top line_bot line"
-			The text color alpha property can be set to 0 so that the label text is not visible on the GP screen
-		These _i widgets can be useful for visual feedback on the GigPerformer screen showing which bank is active
-		When a bank is active the SL MK3 extention will set its value (effectively brightness) to 1 to raise its visibility in GP
+		When a bank is active the extention will set its value (effectively brightness) to 1 to raise its visibility in GP
 			Non-active bank indicators will have their value (brightness) set to 0.3 to reduce their visibility
-
 

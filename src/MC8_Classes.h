@@ -19,7 +19,6 @@
 #define E2_PREFIX "mcx_e2"
 #define E3_PREFIX "mcx_e3"
 #define E4_PREFIX "mcx_e4"
-#define KNOB_PREFIX "mcx_k"
 
 #define ROW_PREFIX_ARRAY { BOTTOM_PREFIX, TOP_PREFIX, B2_PREFIX, T2_PREFIX, E1_PREFIX, E2_PREFIX, E3_PREFIX, E4_PREFIX}
 

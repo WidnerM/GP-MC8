@@ -11,12 +11,14 @@ set(PROJECT_NAME "GP-MC8") # Change this to your liking
 project(${PROJECT_NAME} VERSION 1.0)
 
 
-# Import the SDK and other dependencies
-include("${CMAKE_CURRENT_LIST_DIR}/cmake/dependencies.cmake")
-
-# don't need JUCE for this build
-# include("${CMAKE_CURRENT_LIST_DIR}/cmake/juce-shared-library.cmake")
-
+# Import the SDK
+include(FetchContent)
+FetchContent_Declare(
+  gp-sdk
+  GIT_REPOSITORY https://github.com/gigperformer/gp-sdk.git
+  GIT_TAG 3d4fa49c3d6f96851961893ce51896b4450e59ae # v46
+)
+FetchContent_MakeAvailable(gp-sdk)
 
 # Define our library including sources, include directories and dependencies
 add_library(${PROJECT_NAME} SHARED)
