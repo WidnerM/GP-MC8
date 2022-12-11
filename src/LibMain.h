@@ -22,7 +22,7 @@
 const std::string XMLProductDescription =   
      // Replace with your information            
     "<Library>" 
-    "<Product Name=\"MC8 Extension\" Version=\"1.0\" BuildDate=\"8/21/2022\"></Product> "
+    "<Product Name=\"MC8 Extension\" Version=\"1.0\" BuildDate=\"12/11/2022\"></Product> "
     "<Description>Control Integration for Morningstar MC8</Description>"
     "</Library>"; 
 
