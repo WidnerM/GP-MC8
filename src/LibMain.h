@@ -22,7 +22,7 @@
 const std::string XMLProductDescription =   
      // Replace with your information            
     "<Library>" 
-    "<Product Name=\"MC8 Extension\" Version=\"1.0\" BuildDate=\"8/21/2022\"></Product> "
+    "<Product Name=\"MC8 Extension\" Version=\"1.0\" BuildDate=\"12/11/2022\"></Product> "
     "<Description>Control Integration for Morningstar MC8</Description>"
     "</Library>"; 
 
@@ -284,11 +284,11 @@ public:
         }
         else
         {
-            sprintf_s(str, "Unexpected midi event: ");
+            sprintf(str, "Unexpected midi event: ");
             for (auto x = 0; x < length; x++)
             {
-                sprintf_s(extra, " %0x", data[x]);
-                strcat_s(str, extra);
+                sprintf(extra, " %0x", data[x]);
+                strcat(str, extra);
             }
             scriptLog(str, 1);
             scriptLog(deviceName, 1);
