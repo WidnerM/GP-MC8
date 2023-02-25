@@ -1,4 +1,4 @@
-# Rackspace and Song Selector Extension for Gig Performer
+# Morningstar MC8 and MC6 Pro Extension for Gig Performer
 
 ## Overview
 
