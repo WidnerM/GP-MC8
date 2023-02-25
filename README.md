@@ -1,41 +1,36 @@
-# GP Extension example for C++
+# Rackspace and Song Selector Extension for Gig Performer
 
-This is an example extension using the [Gig Performer SDK](https://github.com/gigperformer/gp-sdk).
-You can use it as a base for your own extensions developed in plain C++ (without JUCE).
+## Overview
 
-## How to build...
+An extension for [Gig Performer](https://gigperformer.com) to utilize the [Morningstar MC](https://www.morningstar.io/) series of foot controllers.  This has been tested and used with the MC8 and MC6 Pro.  It should work with the MC6 as well, but has not been tested.
 
-### ... on macOS
 
--   Make sure you have [CMake](https://cmake.org) installed.
-    You might have to add the path to the cmake executable by adding this line to your bash profile:
+> _Disclaimer: This is a user-created extension and is not supported by Deskew Technologies. Extensions can cause unexpected behaviour in Gig Performer, and in extreme situations could cause it to crash. Please test it thoroughly before using it in any live performances!_
 
-    ```bash
-    export PATH=/Applications/CMake.app/Contents/bin:$PATH
-    ```
+## Installation
 
-    Alternatively, you can install CMake via [Homebrew](https://brew.sh):
+Download the extension (library) files for either MacOS or Windows from the [Releases](https://github.com/WidnerM/GP-MC8/releases) page.  
 
-    ```bash
-    brew install cmake
-    ```
+Mac users will need to move the _libGP-MCx.dylib_ file into this folder and then restart Gig Performer:
+```
+/Users/Shared/Gig Performer/Extensions
+```
+Windows users will need to move the _GP-MCx.dll_ file into this folder and then restart Gig Performer:
+```
+C:\Users\Public\Documents\Gig Performer\Extensions
+```
+When opening Gig Performer, a prompt will appear asking to confirm whether to install the extension.
 
--   Build (and install) the project via CMake.
-    For your convenience we have provided a `build.sh` which contains all necessary commands:
+## Usage
 
-    ```bash
-    ./build.sh
-    ```
+For the extension to successfully communicate with your MCx unit you must dedicate one bank on the MCx to working with GigPerformer.
 
-### ... on Windows
+Banks have been saved in this repository for the MC8 and the MC6 Pro.  Using the Morningstar editor you must load one of these banks into your MC, then navigate to that bank on your MC before starting GigPerformer.
 
--   Make sure you have [CMake](https://cmake.org), [Git](https://git-scm.com) and a C(++) compiler installed.
-    You can get that for example by installing [Visual Studio](https://visualstudio.microsoft.com) with the _Desktop development with C++_ workload and the _Git for Windows_ component.
--   Build (and install) the project via CMake.
-    For your convenience we have provided a `build.cmd` which contains all necessary commands:
+Documentation is available in this repository describing the functionality of the extension and how to configure your Rackspaces, Songs, and Widgets to interact with the MC controller in the manner you would like.
 
-    ```bash
-    build.cmd
-    ```
+A demonstration Gigfile is also provided in this repository.  You should be able to load this Gigfile, see how it interacts with the controller, and look at the various widgets to see how their configurations translate into what you see on the MC controller.  This is fully described in the documentation, but may be easier to grasp by playing with the example Gigfile.
 
-    **Make sure to run the script from the Visual Studio developer command prompt!**
+## Building the Extension
+
+To customize/build the extension, refer to the [Gig Performer SDK](https://github.com/gigperformer/gp-sdk) GitHub page.

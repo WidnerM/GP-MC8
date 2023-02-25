@@ -225,6 +225,11 @@ class SurfaceClass
 public:
 	SurfaceRow Row[8]; // We define the control rows as bottom and top of display, plus a button row for each of the four possible externals
 	uint8_t NumRows = 8;
+	uint8_t RowLen = MC8_ROWLEN; // mc8 = 4, mc6 pro = 3
+	uint8_t ShortNameLen = MC8_SHORTLEN; // mc8 = 10, mc6 pro = 32
+	uint8_t LongNameLen = MC8_LONGLEN;  // mc8 = 24, mc6 pro = 32
+	bool Color = MC8_COLOR;
+	std::string SysexPrefix = MC8_PREFIX;
 
 	bool RowsLinked = false; // MCx this controls display of 2 rows of four (false), or one group of 8 (true)
 
@@ -254,8 +259,8 @@ public:
 		std::string row_labels[] = ROW_LABEL_ARRAY;
         int row_showing[] = {SHOW_BUTTONS, SHOW_VARS_PARTS, SHOW_RACKS_SONGS, SHOW_BUTTONS, SHOW_KNOBS, SHOW_KNOBS, SHOW_KNOBS, SHOW_KNOBS };
         uint8_t midi_commands[] = {MIDI_CC_16, MIDI_CC_16, MIDI_CC_16, MIDI_CC_16, MIDI_CC_16, MIDI_CC_16, MIDI_CC_16, MIDI_CC_16 };
-		int row_columns[] = { 4, 4, 4, 4, 1, 1, 1, 1 };
-        uint8_t first_midi[] = {MCX_BUTTON_B1, MCX_BUTTON_T1, MCX_BUTTON_B2, MCX_BUTTON_T2, 22, 23, 24, 25 };
+		uint8_t first_midi[] = { MCX_BUTTON_B1, MCX_BUTTON_T1, MCX_BUTTON_B2, MCX_BUTTON_T2, 22, 23, 24, 25 };
+		// int row_columns[] = { 4, 4, 4, 4, 1, 1, 1, 1 };
 		// uint8_t first_sysex[] = { MKIII_KNOB_BASE, MKIII_BUTTON_BASE_SYSEX, MKIII_FADER_BASE_SYSEX, MKIII_PAD_BASE_SYSEX };
 
 		// basic Surface structure initializations
@@ -265,8 +270,9 @@ public:
 			Row[x].WidgetID = row_tags[x];
 			Row[x].RowLabel = row_labels[x];
 			Row[x].Type = row_types[x];
-			Row[x].Columns = row_columns[x];
-			Row[x].FirstID = first_midi[x];
+			// Row[x].Columns = row_columns[x];
+			if (x > 3) { Row[x].FirstID = first_midi[x]; Row[x].Columns = 1; }
+			else { Row[x].FirstID = x * RowLen; Row[x].Columns = RowLen; }
             Row[x].Showing = row_showing[x];
 			// Row[x].FirstIDsysex = first_sysex[x];
 			// Row[x].MidiCommand = midi_commands[x];

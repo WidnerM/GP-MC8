@@ -62,6 +62,7 @@ public:
     void sendMidiMessage(std::string MidiMessage);
     void sendMidiMessage(gigperformer::sdk::GPMidiMessage MidiMessage);
     void sendMidiMessage(const uint8_t* MidiMessage, int length);
+    void SetSurfaceLayout(std::string config);
 
     // from Display.cpp - functions for displaying things on the MC8 display
     uint8_t calculateMCChecksum(uint16_t len, uint8_t *ptr);
@@ -97,6 +98,7 @@ public:
     void DisplayVariations(SurfaceRow & row, uint8_t firstbutton, uint8_t number, bool forcetocurrent);
     void DisplayRacks(SurfaceRow & row, uint8_t firstbutton, uint8_t number, bool forcetocurrent);
 
+    void DisplayRefresh();
     void ClearDisplayRow(SurfaceRow row);
 
 
@@ -184,6 +186,7 @@ public:
             if (widgetExists(MIDI_IN_WIDGETNAME)) { MidiIn = ParseWidgetName(getWidgetCaption(MIDI_IN_WIDGETNAME), ','); }
             if (widgetExists(MIDI_OUT_WIDGETNAME)) { MidiOut = ParseWidgetName(getWidgetCaption(MIDI_OUT_WIDGETNAME), ','); }
 
+            if (widgetExists(LAYOUT_WIDGETNAME)) { SetSurfaceLayout(getWidgetCaption(LAYOUT_WIDGETNAME)); }
             registerCallback("OnRackspaceActivated");
             registerCallback("OnVariationChanged");
             registerCallback("OnWidgetValueChanged");
@@ -249,7 +252,8 @@ public:
         if (widget.IsSurfaceItemWidget)  // some widgets we listen for may not display on the control surface
         {
             // if the GP widget is not a button in an active bank on the control surface we don't need to display it
-            if ( widget.BankID.compare(Surface.Row[widget.RowNumber].ActiveBankID()) == 0 && Surface.Row[widget.RowNumber].Showing == SHOW_BUTTONS)
+            if ( widget.BankID.compare(Surface.Row[widget.RowNumber].ActiveBankID()) == 0 && Surface.Row[widget.RowNumber].Showing == SHOW_BUTTONS
+                && widget.Column < Surface.RowLen)
             {
                 DisplayWidgetValue(Surface.Row[widget.RowNumber], widget);
                 // DisplayPresetLongname(Surface.Row[widget.RowNumber], widget.Column, widget.LongName + widget.TextValue);

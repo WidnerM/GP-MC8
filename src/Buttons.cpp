@@ -127,14 +127,14 @@ void LibMain::DisplayVariations(SurfaceRow & row, uint8_t firstbutton, uint8_t n
 
     if (forcetocurrent == true)
     {
-        x = current % 4; // we're going to show in banks of 4, this is the offset
+        x = current % Surface.RowLen; // we're going to show in banks of Surface.RowLen, this is the offset
         row.FirstShown = current - x;
     }
     else
     {
         if (row.FirstShown >= count)
         {
-            row.FirstShown -= 4;
+            row.FirstShown -= Surface.RowLen;
         }
         if (row.FirstShown < 0)
         {

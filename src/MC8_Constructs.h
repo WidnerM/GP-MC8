@@ -4,7 +4,26 @@
 #define MFG_ID { 0x00, 0x21, 0x24}
 
 #define MC8_PREFIX "f0 00 21 24 04 00 70 00 00 00 00 00 00 00 00 00"
-#define MC8_SYSEX     { 0xf0, 0x00, 0x21, 0x24, 0x04, 0x00, 0x70, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }
+#define MC8_ROWLEN 4
+#define MC8_SHORTLEN 10
+#define MC8_LONGLEN 24
+#define MC8_COLOR false
+
+#define MC6PRO_PREFIX "f0 00 21 24 06 00 70 00 00 00 00 00 00 00 00 00"
+#define MC6PRO_ROWLEN 3
+#define MC6PRO_SHORTLEN 32
+#define MC6PRO_LONGLEN 32
+#define MC6PRO_COLOR true
+
+// I don't know if these are right for the MC6
+#define MC6_PREFIX "f0 00 21 24 06 00 70 00 00 00 00 00 00 00 00 00"
+#define MC6_ROWLEN 3
+#define MC6_SHORTLEN 10
+#define MC6_LONGLEN 24
+#define MC6_COLOR false
+
+
+// #define MC8_SYSEX     { 0xf0, 0x00, 0x21, 0x24, 0x04, 0x00, 0x70, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }
 #define OPCODE_1 6
 #define OPCODE_2 7
 #define OPCODE_3 8
@@ -22,7 +41,7 @@
 #define BANKNAME_OP 0x10
 #define MESSAGE_OP 0x11
 
-
+#define LAYOUT_WIDGETNAME "mcx_layout"
 #define EXTENSION_IDENTIFIER "Morningstar MCx Extension"
 #define MCX_MIDI_IN "MIDIIN2 (Morningstar MC8)"
 #define MIDI_IN_WIDGETNAME "mcx_midiin"

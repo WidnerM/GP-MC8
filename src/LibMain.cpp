@@ -38,7 +38,7 @@ std::string  LibMain::GetPanelXML(int index)
 
 
 // List of menu items
-std::vector<std::string> menuNames = { "MC8 Item One", "MC8 Item Two", "Re-initialize extention" };
+std::vector<std::string> menuNames = { "MC8 Layout", "MC6 Layout", "MC6 Pro Layout" };
 
 
 int LibMain::GetMenuCount()
@@ -60,30 +60,21 @@ void LibMain::InvokeMenu(int index)
 {
     std::vector <std::string> widgetlist;
     std::string widgetname;
-    int x,y;
 
     if (index >= 0 && index < menuNames.size())
     {
         switch (index)
         {
         case 0:
-            getPluginList(widgetlist, false);
-            scriptLog("Plugin count: " + std::to_string(widgetlist.size()), true);
-            if (widgetlist.size() > 0) {
-                scriptLog("First: " + widgetlist[0], true);
-                x = getPluginParameterCount(widgetlist[0], false);
-                for (y = 0; y < x; y++) {
-                    scriptLog(getPluginParameterName(widgetlist[0], y, false) + ":" + std::to_string(getPluginParameter(widgetlist[0], y, false)), 0);
-                }
-            }
+            SetSurfaceLayout("mc8");
             break;
         case 1:
-            scriptLog("Nothing here.", 0);
+            SetSurfaceLayout("mc6");
             break;
         case 2:
-            SetMidiInOutDevices();
-            Initialization();
-            OnOpen();
+            SetSurfaceLayout("mc6 pro");
+            break;
+        case 3:
             OnStatusChanged(GPStatus_GigFinishedLoading);
             break;
 
@@ -92,6 +83,7 @@ void LibMain::InvokeMenu(int index)
         }
     }
 }
+
 
 void LibMain::sendMidiMessage(std::string MidiMessage) {
     
@@ -112,6 +104,40 @@ void LibMain::sendMidiMessage(const uint8_t* MidiMessage, int length) {
     for (int i = 0; i < MidiOut.size(); i++) {
         sendMidiMessageToMidiOutDevice(MidiOut[i], MidiMessage, length);
     }
+}
+
+// MCx controllers come in different configurations
+// We have a configuration variable in the Surface structure so we can define different action keys for different functions
+void LibMain::SetSurfaceLayout(std::string config) {
+
+    if (widgetExists(LAYOUT_WIDGETNAME)) { setWidgetCaption(LAYOUT_WIDGETNAME, config); }
+
+    if (config.compare("mc6 pro") == 0)
+    {
+        Surface.SysexPrefix = MC6PRO_PREFIX;
+        Surface.Color = MC6PRO_COLOR;
+        Surface.RowLen = MC6PRO_ROWLEN;
+        Surface.ShortNameLen = MC6PRO_SHORTLEN;
+        Surface.LongNameLen = MC6PRO_LONGLEN;
+    }
+    else if (config.compare("mc6") == 0)
+    {
+        Surface.SysexPrefix = MC6_PREFIX;
+        Surface.Color = MC6_COLOR;
+        Surface.RowLen = MC6_ROWLEN;
+        Surface.ShortNameLen = MC6_SHORTLEN;
+        Surface.LongNameLen = MC6_LONGLEN;
+    }
+    else
+    {
+        Surface.SysexPrefix = MC8_PREFIX;
+        Surface.Color = MC8_COLOR;
+        Surface.RowLen = MC8_ROWLEN;
+        Surface.ShortNameLen = MC8_SHORTLEN;
+        Surface.LongNameLen = MC8_LONGLEN;
+    }
+    Surface.Initialize();
+    DisplayRefresh();
 }
 
 

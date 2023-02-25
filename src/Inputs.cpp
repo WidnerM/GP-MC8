@@ -47,8 +47,8 @@ void LibMain::ProcessButton(uint8_t button, uint8_t value)  // processes a midi 
         // secondary actions are up/down/row select
         // a row can display buttons, songs/racks, or variations/songparts, which the "row select" botton will cycle between
         uint8_t thisposition = button & 0x03;
-        uint8_t thisrow = (button >> 2) & 03;
-        uint8_t thisaction = (button >> 4) & 03;
+        uint8_t thisrow = (button >> 2) & 0x03;
+        uint8_t thisaction = (button >> 4) & 0x03;
         // scriptLog("Process button- position:" + std::to_string(thisposition) + "  row:" + std::to_string(thisrow) + "  action:" + std::to_string(thisaction), 1);
 
         if (thisaction == MCX_AUX_ACTION)
@@ -90,8 +90,8 @@ void LibMain::ProcessButton(uint8_t button, uint8_t value)  // processes a midi 
                     break;
                 case SHOW_VARS_PARTS:
                 case SHOW_RACKS_SONGS:
-                    Surface.Row[thisrow].FirstShown -= 4;
-                    DisplayVariations(Surface.Row[thisrow], 0, 4, false);
+                    Surface.Row[thisrow].FirstShown -= Surface.RowLen;
+                    DisplayVariations(Surface.Row[thisrow], 0, Surface.RowLen, false);
                 }
                 break;
             case MCX_ACTION_UP:
@@ -103,8 +103,8 @@ void LibMain::ProcessButton(uint8_t button, uint8_t value)  // processes a midi 
                     break;
                 case SHOW_VARS_PARTS:
                 case SHOW_RACKS_SONGS:
-                    Surface.Row[thisrow].FirstShown += 4;
-                    DisplayVariations(Surface.Row[thisrow], 0, 4, false);
+                    Surface.Row[thisrow].FirstShown += Surface.RowLen;
+                    DisplayVariations(Surface.Row[thisrow], 0, Surface.RowLen, false);
                     break;
                 }
                 break;
@@ -113,11 +113,11 @@ void LibMain::ProcessButton(uint8_t button, uint8_t value)  // processes a midi 
                 {
                 case SHOW_BUTTONS:
                     Surface.Row[thisrow].Showing = SHOW_RACKS_SONGS;
-                    DisplayVariations(Surface.Row[thisrow], 0, 4, true);
+                    DisplayVariations(Surface.Row[thisrow], 0, Surface.RowLen, true);
                     break;
                 case SHOW_RACKS_SONGS:
                     Surface.Row[thisrow].Showing = SHOW_VARS_PARTS;
-                    DisplayVariations(Surface.Row[thisrow], 0, 4, true);
+                    DisplayVariations(Surface.Row[thisrow], 0, Surface.RowLen, true);
                     break;
                 case SHOW_VARS_PARTS:
                     if (Surface.Row[thisrow].BankValid()) {
@@ -127,7 +127,7 @@ void LibMain::ProcessButton(uint8_t button, uint8_t value)  // processes a midi 
                     else
                     {
                         Surface.Row[thisrow].Showing = SHOW_RACKS_SONGS;
-                        DisplayVariations(Surface.Row[thisrow], 0, 4, true);
+                        DisplayVariations(Surface.Row[thisrow], 0, Surface.RowLen, true);
                     }
                     break;
                 }

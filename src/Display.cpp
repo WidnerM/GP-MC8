@@ -24,7 +24,7 @@ gigperformer::sdk::GPMidiMessage LibMain::makeMCMessage(std::string payload, uin
 
     // build 16 byte MC prefix + payload + append the 00 f7 into a GPMidiMessage
     // textmessage = MC8_PREFIX + textToHexString(payload) + " 00 f7";
-    midimessage = gigperformer::sdk::GPMidiMessage(MC8_PREFIX + (std::string) " " + textToHexString(payload) + " 00 f7");
+    midimessage = gigperformer::sdk::GPMidiMessage(Surface.SysexPrefix + (std::string) " " + textToHexString(payload) + " 00 f7");
     // scriptLog(textmessage, 1);
 
     // set opcodes
@@ -66,15 +66,15 @@ void LibMain::Notify(std::string text, uint8_t duration)
 // displays short preset name at position
 void LibMain::PresetShortName(std::string text, uint8_t position)
 {
-    std::string cleantext = cleanSysex(text) + (std::string) "             ";
-    SendTextToMCx(cleantext.substr(0,10), 0x01, position, 0x00);
+    std::string cleantext = cleanSysex(text) + (std::string) "                                                ";
+    SendTextToMCx(cleantext.substr(0,Surface.ShortNameLen), 0x01, position, 0x00);
 }
 
 // sets preset long name name at position
 void LibMain::PresetLongName(std::string text, uint8_t position)
 {
-    std::string cleantext = cleanSysex(text) + (std::string) "                          ";
-    SendTextToMCx(cleantext.substr(0, 24), 0x03, position, 0x00);
+    std::string cleantext = cleanSysex(text) + (std::string) "                                                   ";
+    SendTextToMCx(cleantext.substr(0, Surface.LongNameLen), 0x03, position, 0x00);
 }
 
 // sets all preset Long Names to this so it stays on screen regardless of current preset
@@ -227,13 +227,13 @@ void LibMain::DisplayRow(SurfaceRow row)
         switch (row.Showing)
         {
         case SHOW_BUTTONS:
-            DisplayButtons(row, 0, 4);
+            DisplayButtons(row, 0, Surface.RowLen);
             break;
         case SHOW_RACKS_SONGS:
-            DisplayVariations(row, 0, 4, true);
+            DisplayVariations(row, 0, Surface.RowLen, true);
             break;
         case SHOW_VARS_PARTS:
-            DisplayVariations(row, 0, 4, true);
+            DisplayVariations(row, 0, Surface.RowLen, true);
             break;
         case SHOW_KNOBS:
             DisplayKnobs(row);
@@ -243,11 +243,19 @@ void LibMain::DisplayRow(SurfaceRow row)
     // else if (row.Type == BUTTON_TYPE ) DisplayButtons(row, 0, 4);
 }
 
+void LibMain::DisplayRefresh()
+{
+    DisplayRow(Surface.Row[BOTTOM_ROW]);
+    DisplayRow(Surface.Row[TOP_ROW]);
+    DisplayRow(Surface.Row[B2_ROW]);
+    DisplayRow(Surface.Row[T2_ROW]);
+}
+
 void LibMain::ClearDisplayRow(SurfaceRow row)
 {
     uint8_t column;
 
-    for (column = 0; column <= row.Columns -1 ; column++)
+    for (column = 0; column <= Surface.RowLen -1 ; column++)
     {
         PresetShortName("", row.FirstID + column);
     }
