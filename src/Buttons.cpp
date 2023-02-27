@@ -81,7 +81,7 @@ std::string LibMain::makeVariationText(SurfaceRow row, int index)
     }
  
     // scriptLog("fullname = " + fullname, 1);
-    return fullname.substr(0,9);
+    return fullname.substr(0,Surface.ShortNameLen - 1);
 }
 
 // as of now there's no difference between DisplayRacks and DisplayVariations
@@ -150,6 +150,7 @@ void LibMain::DisplayVariations(SurfaceRow & row, uint8_t firstbutton, uint8_t n
         if (positionindex >= count) // clear the text if there's no song this high
         {
             PresetShortName("", row.FirstID + x);
+            TogglePreset(row.FirstID + x, 0); // turn toggle off
             // SetButtonColor(MKIII_DISPLAY_BUTTON_1 + x, SLMKIII_BLACK); // clear the button if no song/var is here
         }
         else
@@ -157,8 +158,10 @@ void LibMain::DisplayVariations(SurfaceRow & row, uint8_t firstbutton, uint8_t n
             variationname = makeVariationText(row, positionindex);
             if (positionindex == current)
             {
-                variationname = (std::string) "(" + variationname.substr(0, 8) + ")";
+                variationname = (std::string) "(" + variationname.substr(0, Surface.ShortNameLen - 2) + ")";
+                TogglePreset(row.FirstID + x, 1); // turn toggle off
             }
+            else TogglePreset(row.FirstID + x, 0); // turn toggle on
             PresetShortName(variationname, row.FirstID + x);
         }
         

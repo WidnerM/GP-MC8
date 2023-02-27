@@ -75,6 +75,8 @@ public:
     void LongPresetNames(std::string text);
     std::string makeVariationText(SurfaceRow row, int index);
     void Notify(std::string text, uint8_t duration);
+    void TogglePreset(uint8_t position, uint8_t value);
+    void EngagePreset(uint8_t position, uint8_t value);
 
     void InitializeMC8();
     void DisplayText(uint8_t column, uint8_t row, std::string text);
@@ -319,20 +321,20 @@ public:
             // scriptLog("Entered setlist mode.", 1);
             // SetButtonColor(MKIII_CLEAR, Surface.BottomColor[SHOW_RACKSPACES]);
             // Surface.BottomMode = SHOW_SONGS;
-            DisplayRow(Surface.Row[BOTTOM_ROW]);
-            DisplayRow(Surface.Row[TOP_ROW]);
-            DisplayRow(Surface.Row[B2_ROW]);
-            DisplayRow(Surface.Row[T2_ROW]);
+            if (Surface.Color) EngagePreset(33, 2);
+            CurrentBankName(getSongName(getCurrentSongIndex()));
+            LongPresetNames(getSongpartName(getCurrentSongIndex(), getCurrentSongpartIndex()));
+            DisplayRefresh();
         }
         else
         {
             // scriptLog("Entered rackspace mode.", 1);
             // SetButtonColor(MKIII_CLEAR, Surface.BottomColor[SHOW_SONGS]);
             // Surface.BottomMode = SHOW_RACKSPACES;
-            DisplayRow(Surface.Row[BOTTOM_ROW]);
-            DisplayRow(Surface.Row[TOP_ROW]);
-            DisplayRow(Surface.Row[B2_ROW]);
-            DisplayRow(Surface.Row[T2_ROW]);
+            if (Surface.Color) EngagePreset(33, 1);
+            CurrentBankName(getRackspaceName(getCurrentRackspaceIndex()));
+            LongPresetNames(getVariationName(getCurrentRackspaceIndex(), getCurrentVariationIndex()));
+            DisplayRefresh();
         }
     }
 
@@ -443,16 +445,9 @@ public:
         // scriptLog("SL identified " + std::to_string(Surface.Row[BUTTON_ROW].BankIDs.size()) + " button banks", 1);
 
         setActiveBank(Surface.Row[TOP_ROW]);
-        DisplayRow(Surface.Row[TOP_ROW]);
-        
         setActiveBank(Surface.Row[BOTTOM_ROW]);
-        DisplayRow(Surface.Row[BOTTOM_ROW]);
-
         setActiveBank(Surface.Row[B2_ROW]);
-        DisplayRow(Surface.Row[B2_ROW]);
-
         setActiveBank(Surface.Row[T2_ROW]);
-        DisplayRow(Surface.Row[T2_ROW]);
 
         setActiveBank(Surface.Row[E3_ROW]);
         DisplayRow(Surface.Row[E3_ROW]);
@@ -464,11 +459,15 @@ public:
         {
             CurrentBankName(getSongName(getCurrentSongIndex()));
             LongPresetNames(getSongpartName(getCurrentSongIndex(), getCurrentSongpartIndex()));
+            DisplayRefresh();
+            if (Surface.Color) EngagePreset(33, 2);
         }
         else
         {
             CurrentBankName(getRackspaceName(getCurrentRackspaceIndex()));
             LongPresetNames(getVariationName(getCurrentRackspaceIndex(), getCurrentVariationIndex()));
+            DisplayRefresh();
+            if (Surface.Color) EngagePreset(33, 1);
         }
     } 
 
@@ -484,18 +483,14 @@ public:
         // DisplayRow(Surface.Row[KNOB_ROW]);
 
         setActiveBank(Surface.Row[BOTTOM_ROW]);
-        DisplayRow(Surface.Row[BOTTOM_ROW]);
-
         setActiveBank(Surface.Row[TOP_ROW]);
-        DisplayRow(Surface.Row[TOP_ROW]);
-
         setActiveBank(Surface.Row[B2_ROW]);
-        DisplayRow(Surface.Row[B2_ROW]);
-
         setActiveBank(Surface.Row[T2_ROW]);
-        DisplayRow(Surface.Row[T2_ROW]);
 
         LongPresetNames(getVariationName(getCurrentRackspaceIndex(), newIndex));
+
+        DisplayRefresh();
+
 
         // Notify("Variation: " + newIndex);
     }
@@ -533,7 +528,9 @@ public:
         ClearDisplayRow(Surface.Row[TOP_ROW]);
         ClearDisplayRow(Surface.Row[B2_ROW]);
         ClearDisplayRow(Surface.Row[T2_ROW]);
-        CurrentBankName("GigPerformer Extension");
+        if (Surface.Color) EngagePreset(33, 3);
+        CurrentBankName("GigPerformer\\nExtension");
+        LongPresetNames("");
         if (Surface.Page == 1) {
             SendTextToMCx("", 0x00, 0x02, 0x00); // page toggle
         }

@@ -82,13 +82,14 @@ void LibMain::LongPresetNames(std::string text)
 {
     for (uint8_t x = 0; x < 22; x++)
         PresetLongName(text, x);
+    if (Surface.Color) PresetLongName(text, 23);
 }
 
 // sets preset long name name at position
 void LibMain::CurrentBankName(std::string text)
 {
-    std::string cleantext = cleanSysex(text) + (std::string) "                          ";
-    SendTextToMCx(cleantext.substr(0, 24), 0x10, 0, 0);
+    std::string cleantext = cleanSysex(text) + (std::string) "                                       ";
+    SendTextToMCx(cleantext.substr(0, Surface.LongNameLen), 0x10, 0, 0);
 }
 
 
@@ -199,9 +200,30 @@ void LibMain::SetButtonRGBColor(uint8_t button, int value) // int parameter will
 
 // Show value of a widget on its linked control surface item
 
+void LibMain::TogglePreset(uint8_t position, uint8_t value)
+{
+    uint8_t MidiMessage[3];
+
+    MidiMessage[0] = 0xb0; // cc channel zero
+    MidiMessage[1] = value > 0 ? 2 : 3;
+    MidiMessage[2] = position;
+    sendMidiMessage(MidiMessage, sizeof(MidiMessage));
+}
+
+void LibMain::EngagePreset(uint8_t position, uint8_t value)
+{
+    uint8_t MidiMessage[3];
+
+    MidiMessage[0] = 0xb0; // cc channel zero
+    MidiMessage[1] = position;
+    MidiMessage[2] = value;
+    sendMidiMessage(MidiMessage, sizeof(MidiMessage));
+}
 void LibMain::DisplayWidgetValue(const SurfaceRow &row, SurfaceWidget widget)
 { 
+
     PresetShortName(widget.Value > 0 ? widget.ShortNameOn : widget.ShortNameOff, row.FirstID + widget.Column);
+    TogglePreset(row.FirstID + widget.Column, widget.Value);
     // PresetLongName(widget.LongName, Row.FirstID + widget.Column);
 }
 
@@ -245,6 +267,7 @@ void LibMain::DisplayRow(SurfaceRow row)
 
 void LibMain::DisplayRefresh()
 {
+
     DisplayRow(Surface.Row[BOTTOM_ROW]);
     DisplayRow(Surface.Row[TOP_ROW]);
     DisplayRow(Surface.Row[B2_ROW]);
@@ -258,5 +281,6 @@ void LibMain::ClearDisplayRow(SurfaceRow row)
     for (column = 0; column <= Surface.RowLen -1 ; column++)
     {
         PresetShortName("", row.FirstID + column);
+        TogglePreset(row.FirstID + column, 0);
     }
 }
