@@ -246,7 +246,7 @@ public:
 	uint8_t BottomColor[BOTTOM_MODES] = { SLMKIII_ORANGE, SLMKIII_BLUE, SLMKIII_PURPLE, SLMKIII_MINT, SLMKIII_GREEN };
 	uint8_t BottomHalfColor[BOTTOM_MODES] = { SLMKIII_ORANGE_HALF, SLMKIII_BLUE_HALF, SLMKIII_PURPLE_HALF, SLMKIII_MINT_HALF, SLMKIII_GREEN_HALF };
 
-
+	int LastRackspace = -1;
 	int syncState = 0;  // is our current model in sync with the device.  semi-deprecated
 
 	// Initialize the surface class as required - specific to a particular control surface

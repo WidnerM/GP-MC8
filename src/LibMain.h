@@ -192,6 +192,7 @@ public:
             registerCallback("OnRackspaceActivated");
             registerCallback("OnVariationChanged");
             registerCallback("OnWidgetValueChanged");
+            // registerCallback("OnTunerModeChanged");
             // registerCallback("OnWidgetCaptionChanged");
             registerCallback("OnWidgetStateChanged");
             registerCallback("OnSongChanged");
@@ -405,6 +406,11 @@ public:
         }
     }
 
+    void OnTunerModeChanged(bool visible) override
+    {
+        // scriptLog("Tuner Mode changed", 1);
+    }
+
     // Called when rackspace changed
     void OnRackspaceActivated() override
     {
@@ -412,62 +418,66 @@ public:
         std::vector<std::string> widgetlist, globalwidgetlist;
         int row;
 
-        // scriptLog("Rackspace Changed to " + std::to_string(getCurrentRackspaceIndex()) , 1);
+        // scriptLog("Rackspace Changed to " + std::to_string(getCurrentRackspaceIndex()), 1);
 
-        // Clear the BankIDs and active bank data from the prior rackspace's widget set
-        for (row = 0; row < std::size(Surface.Row); row++)
+        if (Surface.LastRackspace != getCurrentRackspaceIndex()) // this is here because OnRackspaceActivated can get called multiple times in a row
         {
-            Surface.Row[row].ActiveBank = -1;
-            Surface.Row[row].BankIDs.clear();
-        }
-
-        getWidgetList(globalwidgetlist, true);
-        getWidgetList(widgetlist, false);
-        widgetlist.insert(widgetlist.end(), globalwidgetlist.begin(), globalwidgetlist.end());
-        buildSurfaceModel(widgetlist);
-
-        if (widgetExists(MCX_CONFIG_WIDGETNAME))
-        {
-            widgetlist = ParseWidgetName(getWidgetCaption(MCX_CONFIG_WIDGETNAME), '_');
-            for (row = 0; row < Surface.NumRows; row++)
+            Surface.LastRackspace = getCurrentRackspaceIndex();
+            // Clear the BankIDs and active bank data from the prior rackspace's widget set
+            for (row = 0; row < std::size(Surface.Row); row++)
             {
-                if (row < widgetlist.size())
+                Surface.Row[row].ActiveBank = -1;
+                Surface.Row[row].BankIDs.clear();
+            }
+
+            getWidgetList(globalwidgetlist, true);
+            getWidgetList(widgetlist, false);
+            widgetlist.insert(widgetlist.end(), globalwidgetlist.begin(), globalwidgetlist.end());
+            buildSurfaceModel(widgetlist);
+
+            if (widgetExists(MCX_CONFIG_WIDGETNAME))
+            {
+                widgetlist = ParseWidgetName(getWidgetCaption(MCX_CONFIG_WIDGETNAME), '_');
+                for (row = 0; row < Surface.NumRows; row++)
                 {
-                    // scriptLog("sizeof list:" + std::to_string(sizeof(widgetlist)) + "  row:" + std::to_string(row), 1);
-                    if (widgetlist[row] == "buttons") Surface.Row[row].Showing = SHOW_BUTTONS;
-                    else if (widgetlist[row] == "variations") Surface.Row[row].Showing = SHOW_VARS_PARTS;
-                    else if (widgetlist[row] == "racks") Surface.Row[row].Showing = SHOW_RACKS_SONGS;
+                    if (row < widgetlist.size())
+                    {
+                        // scriptLog("sizeof list:" + std::to_string(sizeof(widgetlist)) + "  row:" + std::to_string(row), 1);
+                        if (widgetlist[row] == "buttons") Surface.Row[row].Showing = SHOW_BUTTONS;
+                        else if (widgetlist[row] == "variations") Surface.Row[row].Showing = SHOW_VARS_PARTS;
+                        else if (widgetlist[row] == "racks") Surface.Row[row].Showing = SHOW_RACKS_SONGS;
+                    }
                 }
             }
-        }
 
-        // scriptLog("SL identified " + std::to_string(Surface.Row[KNOB_ROW].BankIDs.size()) + " knob banks", 1);
-        // scriptLog("SL identified " + std::to_string(Surface.Row[BUTTON_ROW].BankIDs.size()) + " button banks", 1);
+            // scriptLog("SL identified " + std::to_string(Surface.Row[KNOB_ROW].BankIDs.size()) + " knob banks", 1);
+            // scriptLog("SL identified " + std::to_string(Surface.Row[BUTTON_ROW].BankIDs.size()) + " button banks", 1);
 
-        setActiveBank(Surface.Row[TOP_ROW]);
-        setActiveBank(Surface.Row[BOTTOM_ROW]);
-        setActiveBank(Surface.Row[B2_ROW]);
-        setActiveBank(Surface.Row[T2_ROW]);
+            setActiveBank(Surface.Row[TOP_ROW]);
+            setActiveBank(Surface.Row[BOTTOM_ROW]);
+            setActiveBank(Surface.Row[B2_ROW]);
+            setActiveBank(Surface.Row[T2_ROW]);
 
-        setActiveBank(Surface.Row[E3_ROW]);
-        DisplayRow(Surface.Row[E3_ROW]);
+            setActiveBank(Surface.Row[E3_ROW]);
+            DisplayRow(Surface.Row[E3_ROW]);
 
-        setActiveBank(Surface.Row[E4_ROW]);
-        DisplayRow(Surface.Row[E4_ROW]);
-     
-        if (inSetlistMode() == true)
-        {
-            CurrentBankName(getSongName(getCurrentSongIndex()));
-            LongPresetNames(getSongpartName(getCurrentSongIndex(), getCurrentSongpartIndex()));
-            DisplayRefresh();
-            if (Surface.Color) EngagePreset(33, 2);
-        }
-        else
-        {
-            CurrentBankName(getRackspaceName(getCurrentRackspaceIndex()));
-            LongPresetNames(getVariationName(getCurrentRackspaceIndex(), getCurrentVariationIndex()));
-            DisplayRefresh();
-            if (Surface.Color) EngagePreset(33, 1);
+            setActiveBank(Surface.Row[E4_ROW]);
+            DisplayRow(Surface.Row[E4_ROW]);
+
+            if (inSetlistMode() == true)
+            {
+                CurrentBankName(getSongName(getCurrentSongIndex()));
+                LongPresetNames(getSongpartName(getCurrentSongIndex(), getCurrentSongpartIndex()));
+                DisplayRefresh();
+                if (Surface.Color) EngagePreset(33, 2);
+            }
+            else
+            {
+                CurrentBankName(getRackspaceName(getCurrentRackspaceIndex()));
+                LongPresetNames(getVariationName(getCurrentRackspaceIndex(), getCurrentVariationIndex()));
+                DisplayRefresh();
+                if (Surface.Color) EngagePreset(33, 1);
+            }
         }
     } 
 
