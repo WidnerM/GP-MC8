@@ -77,6 +77,7 @@ public:
     void Notify(std::string text, uint8_t duration);
     void TogglePreset(uint8_t position, uint8_t value);
     void EngagePreset(uint8_t position, uint8_t value);
+    void TogglePage();
 
     void InitializeMC8();
     void DisplayText(uint8_t column, uint8_t row, std::string text);

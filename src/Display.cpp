@@ -219,6 +219,12 @@ void LibMain::EngagePreset(uint8_t position, uint8_t value)
     MidiMessage[2] = value;
     sendMidiMessage(MidiMessage, sizeof(MidiMessage));
 }
+
+void LibMain::TogglePage()
+{
+    EngagePreset(4, 0); // CC 4 [any] toggles page
+}
+
 void LibMain::DisplayWidgetValue(const SurfaceRow &row, SurfaceWidget widget)
 { 
 
