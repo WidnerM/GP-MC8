@@ -57,14 +57,14 @@ void LibMain::ProcessButton(uint8_t button, uint8_t value)  // processes a midi 
             if (button == MCX_PAGE1 && Surface.Page == 1)
             {
                 Surface.Page = 0;
-                SendTextToMCx("", 0x00, 0x02, 0x00); // page toggle
-                // TogglePage();
+                // SendTextToMCx("", 0x00, 0x02, 0x00); // page toggle
+                TogglePage();
             }
             else if (button == MCX_PAGE2 && Surface.Page == 0)
             {
                 Surface.Page = 1;
-                SendTextToMCx("", 0x00, 0x02, 0x00); // page toggle
-                // TogglePage();
+                // SendTextToMCx("", 0x00, 0x02, 0x00); // page toggle
+                TogglePage();
             }
             else if (button < MCX_PAGE1)
             {
