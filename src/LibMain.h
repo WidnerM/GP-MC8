@@ -234,6 +234,7 @@ public:
         // Having the Play button start/stp the global playhead is controlled in Inputs.cpp via widget named sl_t_p
         // SetButtonColor(MKIII_TRANSPORT_PLAY, (playing ? 0x21 : 0x00));
         // Notify("Play state changed.", 20);
+        // scriptLog("Play State change: " + std::to_string(playing), 1);
 
     }
 
