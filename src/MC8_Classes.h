@@ -309,5 +309,23 @@ public:
 	{
 		return (rownum >= 0 && rownum < NumRows);
 	}
+
+	bool SyncBankIDs(uint8_t syncrow)
+	{
+		bool changes_made = false;
+
+		if (Row[syncrow].BankValid()) {
+			std::string rowname = Row[syncrow].ActiveBankID();
+			for (uint8_t x = 0; x < std::size(Row); x++)
+			{
+				if (x != syncrow)
+				{
+					if (Row[x].makeActiveBank(rowname)) changes_made = true;
+				}
+			}
+		}
+
+		return changes_made;
+	}
 };
 

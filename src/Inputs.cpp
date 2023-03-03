@@ -58,13 +58,13 @@ void LibMain::ProcessButton(uint8_t button, uint8_t value)  // processes a midi 
             {
                 Surface.Page = 0;
                 // SendTextToMCx("", 0x00, 0x02, 0x00); // page toggle
-                TogglePage();
+                TogglePage();  // originally this would toggle the page on the MCx.  Now we just emulate that.
             }
             else if (button == MCX_PAGE2 && Surface.Page == 0)
             {
                 Surface.Page = 1;
                 // SendTextToMCx("", 0x00, 0x02, 0x00); // page toggle
-                TogglePage();
+                TogglePage();  // originally this would toggle the page on the MCx.  Now we just emulate that.
             }
             else if (button < MCX_PAGE1)
             {
@@ -88,7 +88,8 @@ void LibMain::ProcessButton(uint8_t button, uint8_t value)  // processes a midi 
                 {
                 case SHOW_BUTTONS:
                     RowPreviousBank(Surface.Row[thisrow]);
-                    DisplayRow(Surface.Row[thisrow]);
+                    if (Surface.SyncBankIDs(thisrow)) DisplayRefresh();
+                    else DisplayRow(Surface.Row[thisrow]);
                     break;
                 case SHOW_VARS_PARTS:
                 case SHOW_RACKS_SONGS:
@@ -101,7 +102,8 @@ void LibMain::ProcessButton(uint8_t button, uint8_t value)  // processes a midi 
                 {
                 case SHOW_BUTTONS:
                     RowNextBank(Surface.Row[thisrow]);
-                    DisplayRow(Surface.Row[thisrow]);
+                    if (Surface.SyncBankIDs(thisrow)) DisplayRefresh();
+                    else DisplayRow(Surface.Row[thisrow]);
                     break;
                 case SHOW_VARS_PARTS:
                 case SHOW_RACKS_SONGS:
