@@ -9,17 +9,17 @@
 
 #pragma once
 
-#define MIDI_CC_16              0xB0
+#define MIDI_CC_00              0xB0
 #define NOTE_ON_16				0x9f
 #define MCX_BUTTON_BASE 0x00
-#define MCX_BUTTON_MAX 0x29
+#define MCX_BUTTON_MAX 0x3f
 #define MCX_BUTTON_B1 0x00
 #define MCX_BUTTON_T1 0x04
 #define MCX_BUTTON_B2 0x08
 #define MCX_BUTTON_T2 0x0C
 #define MCX_KNOB_1	0x40
-#define MCX_KNOB_2	0x40
-#define MCX_KNOB_3	0x40
+#define MCX_KNOB_2	0x41
+#define MCX_KNOB_3	0x42
 #define MCX_KNOB_4	0x43
 
 #define MCX_BUTTON_ACTION 0x00

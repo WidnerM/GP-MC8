@@ -233,18 +233,18 @@ public:
 
 	bool RowsLinked = false; // MCx this controls display of 2 rows of four (false), or one group of 8 (true)
 
-	uint8_t BottomMode = SHOW_BUTTONS;  // What to show along bottom row of display
-    uint8_t TopMode = SHOW_VARS_PARTS; // What to show along top row of display
+	// uint8_t BottomMode = SHOW_BUTTONS;  // What to show along bottom row of display
+    // uint8_t TopMode = SHOW_VARS_PARTS; // What to show along top row of display
 
-	uint8_t DisplayLayout = KNOB_LAYOUT; // Not sure if we're going to use this at all 
-	uint8_t SideMode = SHOW_BUTTONS;
+	// uint8_t DisplayLayout = KNOB_LAYOUT; // Not sure if we're going to use this at all 
+	// uint8_t SideMode = SHOW_BUTTONS;
 	uint8_t Page = 0;
 
 	// FirstShown[x] is used to remember what number is the first shown on the display if we're paging through songs/parts/racks/variations
 	// if both Bottom and Top row are displaying the same thing we'll display 8 consecutive rather than different starts for each row
-	uint8_t FirstShown[BOTTOM_MODES] = { 0, 0, 0, 0, 0 };
-	uint8_t BottomColor[BOTTOM_MODES] = { SLMKIII_ORANGE, SLMKIII_BLUE, SLMKIII_PURPLE, SLMKIII_MINT, SLMKIII_GREEN };
-	uint8_t BottomHalfColor[BOTTOM_MODES] = { SLMKIII_ORANGE_HALF, SLMKIII_BLUE_HALF, SLMKIII_PURPLE_HALF, SLMKIII_MINT_HALF, SLMKIII_GREEN_HALF };
+	// uint8_t FirstShown[BOTTOM_MODES] = { 0, 0, 0, 0, 0 };
+	// uint8_t BottomColor[BOTTOM_MODES] = { SLMKIII_ORANGE, SLMKIII_BLUE, SLMKIII_PURPLE, SLMKIII_MINT, SLMKIII_GREEN };
+	// uint8_t BottomHalfColor[BOTTOM_MODES] = { SLMKIII_ORANGE_HALF, SLMKIII_BLUE_HALF, SLMKIII_PURPLE_HALF, SLMKIII_MINT_HALF, SLMKIII_GREEN_HALF };
 
 	int LastRackspace = -1;
 	int syncState = 0;  // is our current model in sync with the device.  semi-deprecated
@@ -258,8 +258,8 @@ public:
 		std::string row_types[] = ROW_TYPE_ARRAY;
 		std::string row_labels[] = ROW_LABEL_ARRAY;
         int row_showing[] = {SHOW_BUTTONS, SHOW_VARS_PARTS, SHOW_RACKS_SONGS, SHOW_BUTTONS, SHOW_KNOBS, SHOW_KNOBS, SHOW_KNOBS, SHOW_KNOBS };
-        uint8_t midi_commands[] = {MIDI_CC_16, MIDI_CC_16, MIDI_CC_16, MIDI_CC_16, MIDI_CC_16, MIDI_CC_16, MIDI_CC_16, MIDI_CC_16 };
-		uint8_t first_midi[] = { MCX_BUTTON_B1, MCX_BUTTON_T1, MCX_BUTTON_B2, MCX_BUTTON_T2, 22, 23, 24, 25 };
+        uint8_t midi_commands[] = {MIDI_CC_00, MIDI_CC_00, MIDI_CC_00, MIDI_CC_00, MIDI_CC_00, MIDI_CC_00, MIDI_CC_00, MIDI_CC_00 };
+		// uint8_t first_midi[] = { MCX_BUTTON_B1, MCX_BUTTON_T1, MCX_BUTTON_B2, MCX_BUTTON_T2, 22, 23, 24, 25 };
 		// int row_columns[] = { 4, 4, 4, 4, 1, 1, 1, 1 };
 		// uint8_t first_sysex[] = { MKIII_KNOB_BASE, MKIII_BUTTON_BASE_SYSEX, MKIII_FADER_BASE_SYSEX, MKIII_PAD_BASE_SYSEX };
 
@@ -271,7 +271,7 @@ public:
 			Row[x].RowLabel = row_labels[x];
 			Row[x].Type = row_types[x];
 			// Row[x].Columns = row_columns[x];
-			if (x > 3) { Row[x].FirstID = first_midi[x]; Row[x].Columns = 1; }
+			if (x > 3) { Row[x].FirstID = 0; Row[x].Columns = 1; } // we don't send midi to expression rows, all are 1 column
 			else { Row[x].FirstID = x * RowLen; Row[x].Columns = RowLen; }
             Row[x].Showing = row_showing[x];
 			// Row[x].FirstIDsysex = first_sysex[x];

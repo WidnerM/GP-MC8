@@ -16,7 +16,7 @@
 #define MC6PRO_COLOR true
 
 // I don't know if these are right for the MC6
-#define MC6_PREFIX "f0 00 21 24 06 00 70 00 00 00 00 00 00 00 00 00"
+#define MC6_PREFIX "f0 00 21 24 03 00 70 00 00 00 00 00 00 00 00 00"
 #define MC6_ROWLEN 3
 #define MC6_SHORTLEN 10
 #define MC6_LONGLEN 24
@@ -33,6 +33,9 @@
 #define OPCODE_7 12
 #define TX_ID 13
 
+#define PRESET_SAVE 0x7f
+#define PRESET_DONTSAVE 0
+
 #define SHORTNAME_OP 0x01
 #define TOGGLENAME_OP 0x02
 #define LONGNAME_OP 0x03
@@ -40,6 +43,26 @@
 #define OTHERDATA_OP 0x05
 #define BANKNAME_OP 0x10
 #define MESSAGE_OP 0x11
+
+#define ACTION_NOTHING 0x00
+#define ACTION_PRESS 0x01
+#define ACTION_RELEASE 0x02
+#define ACTION_LONGPRESS 0x03
+#define ACTION_LONGRELEASE 0x04
+#define ACTION_DOUBLETAP 0x05
+#define ACTION_DOUBLETAPRELEASE 0x06
+#define ACTION_LONGDOUBLETAP 0x07
+#define ACTION_LONGDOUBLETAPRELEASE 0x08
+
+
+#define MSG_NOTHING 0x00
+#define MSG_PC 0x01
+#define MSG_CC 0x02
+
+#define TOGGLE_TYPE_1 0x00
+#define TOGGLE_TYPE_2 0x01
+#define TOGGLE_TYPE_BOTH 0x02
+#define TOGGLE_TYPE_SHIFT 0x03
 
 #define LAYOUT_WIDGETNAME "mcx_layout"
 #define EXTENSION_IDENTIFIER "Morningstar MCx Extension"

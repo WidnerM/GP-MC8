@@ -44,37 +44,47 @@ void LibMain::ProcessButton(uint8_t button, uint8_t value)  // processes a midi 
     {
         // this is set up so that low 2 bits are switch position (0-3), next two are row (0-3)
         // and fifth bit indicates it's a secondary action, such as double tap or long press release.
-        // secondary actions are up/down/row select
-        // a row can display buttons, songs/racks, or variations/songparts, which the "row select" botton will cycle between
+        // The way we use Aux buttons complicates the logic here a little.  Because there are only generally 6 aux buttons
+        // there is no page one/two distinction.  To avoid uncertainty about what actual button was pressed we map those onto
+        // the [32-39], which has 'thisaction' = 2 and 'thisrow' = 0.  We then consult what page we think we're on to decide
+        // which actual row (page really) to apply them to.
+        // each row can display buttons, songs/racks, or variations/songparts, which the "row select" botton will cycle between
+
         uint8_t thisposition = button & 0x03;
         uint8_t thisrow = (button >> 2) & 0x03;
         uint8_t thisaction = (button >> 4) & 0x03;
+        bool doublesync = false;  // we set this if we want to select and sync both top and bottom rows together
+        uint8_t otherrow = 0;
+
         // scriptLog("Process button- position:" + std::to_string(thisposition) + "  row:" + std::to_string(thisrow) + "  action:" + std::to_string(thisaction), 1);
+ 
+        // Long presses (or double taps) on the "Cycle row select" will set "doublesync" to shift both rows
+        if (button == 49 || button == 53)
+        {
+            thisaction = MCX_ROW_ACTION;
+            doublesync = true;
+            thisrow = thisrow + Surface.Page * 2;
+            // scriptLog("Double sync using row " + std::to_string(thisrow), 1);
+        }
 
         if (thisaction == MCX_AUX_ACTION)
         {
             // the Aux buttons will duplicate the ROW_ACTION buttons, but we need to adjust for which Page the MC8 bank is on
-            if (button == MCX_PAGE1 && Surface.Page == 1)
+            if (button == MCX_PAGE1)
             {
-                Surface.Page = 0;
-                // SendTextToMCx("", 0x00, 0x02, 0x00); // page toggle
-                TogglePage();  // originally this would toggle the page on the MCx.  Now we just emulate that.
+                TogglePage(0);
             }
-            else if (button == MCX_PAGE2 && Surface.Page == 0)
+            else if (button == MCX_PAGE2)
             {
-                Surface.Page = 1;
-                // SendTextToMCx("", 0x00, 0x02, 0x00); // page toggle
-                TogglePage();  // originally this would toggle the page on the MCx.  Now we just emulate that.
+                TogglePage(1);
             }
-            else if (button < MCX_PAGE1)
+            else if (button < MCX_PAGE1) // this is where we catch buttons 32-29 on the aux switches
             {
-                thisrow = thisrow + Surface.Page * 2;
+                thisrow = thisrow + Surface.Page * 2; // only one set of Aux buttons, so we use Page to map them to rows
                 thisaction = MCX_ROW_ACTION;
-                // scriptLog("Process button- position:" + std::to_string(thisposition) + "  row:" + std::to_string(thisrow) + "  action:" + std::to_string(thisaction) + "  page:" + std::to_string(Surface.Page), 1);
-
             }
         }
-        else if (thisaction == MCX_BUTTON_ACTION)
+        else if (thisaction == MCX_BUTTON_ACTION) // this will capture all our primary button actions (cc 0-15)
         {
             ToggleButton(button);
         }
@@ -87,28 +97,47 @@ void LibMain::ProcessButton(uint8_t button, uint8_t value)  // processes a midi 
                 switch (Surface.Row[thisrow].Showing)
                 {
                 case SHOW_BUTTONS:
-                    RowPreviousBank(Surface.Row[thisrow]);
-                    if (Surface.SyncBankIDs(thisrow)) DisplayRefresh();
-                    else DisplayRow(Surface.Row[thisrow]);
+                    Surface.Row[thisrow].DecrementBank(); // set row to prior bank
+                    if (Surface.SyncBankIDs(thisrow)) DisplayRefresh();  // sync other rows to it, display all if others match
+                    else DisplayRow(Surface.Row[thisrow]); // only redisplay thisrow if no others match
                     break;
                 case SHOW_VARS_PARTS:
                 case SHOW_RACKS_SONGS:
-                    Surface.Row[thisrow].FirstShown -= Surface.RowLen;
-                    DisplayVariations(Surface.Row[thisrow], 0, Surface.RowLen, false);
+                    if (Surface.Row[TOP_ROW].Showing == Surface.Row[BOTTOM_ROW].Showing)
+                    {
+                        Surface.Row[TOP_ROW].FirstShown -= 2 * Surface.RowLen;
+                        DisplayVariations(Surface.Row[TOP_ROW], 0, Surface.RowLen, false);
+                        DisplayVariations(Surface.Row[BOTTOM_ROW], 0, Surface.RowLen, false);
+                    }
+                    else
+                    {
+                        Surface.Row[thisrow].FirstShown -= Surface.RowLen;
+                        DisplayVariations(Surface.Row[thisrow], 0, Surface.RowLen, false);
+                    }
+                    break;
                 }
                 break;
             case MCX_ACTION_UP:
                 switch (Surface.Row[thisrow].Showing)
                 {
                 case SHOW_BUTTONS:
-                    RowNextBank(Surface.Row[thisrow]);
+                    Surface.Row[thisrow].IncrementBank();
                     if (Surface.SyncBankIDs(thisrow)) DisplayRefresh();
                     else DisplayRow(Surface.Row[thisrow]);
                     break;
                 case SHOW_VARS_PARTS:
                 case SHOW_RACKS_SONGS:
-                    Surface.Row[thisrow].FirstShown += Surface.RowLen;
-                    DisplayVariations(Surface.Row[thisrow], 0, Surface.RowLen, false);
+                    if (Surface.Row[TOP_ROW].Showing == Surface.Row[BOTTOM_ROW].Showing)
+                    {
+                        Surface.Row[TOP_ROW].FirstShown += 2* Surface.RowLen;
+                        DisplayVariations(Surface.Row[TOP_ROW], 0, Surface.RowLen, false);
+                        DisplayVariations(Surface.Row[BOTTOM_ROW], 0, Surface.RowLen, false);
+                    }
+                    else
+                    {
+                        Surface.Row[thisrow].FirstShown += Surface.RowLen;
+                        DisplayVariations(Surface.Row[thisrow], 0, Surface.RowLen, false);
+                    }
                     break;
                 }
                 break;
@@ -117,28 +146,68 @@ void LibMain::ProcessButton(uint8_t button, uint8_t value)  // processes a midi 
                 {
                 case SHOW_BUTTONS:
                     Surface.Row[thisrow].Showing = SHOW_RACKS_SONGS;
-                    DisplayVariations(Surface.Row[thisrow], 0, Surface.RowLen, true);
+                    if (doublesync)
+                    {
+                        if (thisrow % 2 == 0) otherrow = thisrow + 1;
+                        else otherrow = thisrow - 1;
+                        // scriptLog("Going buttons to racks, otherrow = " + std::to_string(otherrow), 1);
+                        Surface.Row[otherrow].Showing = SHOW_RACKS_SONGS;
+                        DisplayVariations(Surface.Row[otherrow], 0, Surface.RowLen, true);
+                        DisplayVariations(Surface.Row[thisrow], 0, Surface.RowLen, true);
+                    }
+                    else DisplayVariations(Surface.Row[thisrow], 0, Surface.RowLen, true);
                     break;
                 case SHOW_RACKS_SONGS:
                     Surface.Row[thisrow].Showing = SHOW_VARS_PARTS;
-                    DisplayVariations(Surface.Row[thisrow], 0, Surface.RowLen, true);
+                    if (doublesync)
+                    {
+                        if (thisrow % 2 == 0) otherrow = thisrow + 1;
+                        else otherrow = thisrow - 1;
+                        // scriptLog("Going to Racks to variations, otherrow = " + std::to_string(otherrow), 1);
+                        Surface.Row[otherrow].Showing = SHOW_VARS_PARTS;
+                        DisplayVariations(Surface.Row[otherrow], 0, Surface.RowLen, true);
+                        DisplayVariations(Surface.Row[thisrow], 0, Surface.RowLen, true);
+                    }
+                    else DisplayVariations(Surface.Row[thisrow], 0, Surface.RowLen, true);
                     break;
                 case SHOW_VARS_PARTS:
-                    if (Surface.Row[thisrow].BankValid()) {
+                    if (Surface.Row[thisrow].BankValid())
+                    {
+                        if (doublesync)
+                        {
+                            if (thisrow % 2 == 0) otherrow = thisrow + 1;
+                            else otherrow = thisrow - 1;
+                            if (Surface.Row[otherrow].BankValid())
+                            {
+                                Surface.Row[otherrow].Showing = SHOW_BUTTONS;
+                                Surface.SyncBankIDs(thisrow);
+                                // scriptLog("Going to variations to buttons, otherrow = " + std::to_string(otherrow), 1);
+                            }
+                            DisplayRow(Surface.Row[otherrow]);
+                        }
                         Surface.Row[thisrow].Showing = SHOW_BUTTONS;
                         DisplayRow(Surface.Row[thisrow]);
                     }
                     else
                     {
                         Surface.Row[thisrow].Showing = SHOW_RACKS_SONGS;
-                        DisplayVariations(Surface.Row[thisrow], 0, Surface.RowLen, true);
+                        if (doublesync)
+                        {
+                            if (thisrow % 2 == 0) otherrow = thisrow + 1;
+                            else otherrow = thisrow - 1;
+                            scriptLog("Going Variation to Racks, otherrow = " + std::to_string(otherrow), 1);
+                            Surface.Row[otherrow].Showing = SHOW_RACKS_SONGS;
+                            DisplayVariations(Surface.Row[otherrow], 0, Surface.RowLen, true);
+                            DisplayVariations(Surface.Row[thisrow], 0, Surface.RowLen, true);
+                        }
+                        else DisplayVariations(Surface.Row[thisrow], 0, Surface.RowLen, true);
                     }
                     break;
                 }
                 break;
             } // switch
         } // if it's a row action */
-    } // button down (127)
+    } // button down (cc 0-63 = 127)
 }
 
 
@@ -172,8 +241,8 @@ void LibMain::ToggleButton(uint8_t button)
     }
     else
     {
-        row = E4_ROW;
-        x = button - MCX_KNOB_1;
+        // row = E4_ROW;
+        // x = button - MCX_KNOB_1;
     }
 
     // scriptLog("Toggle sees: button " + std::to_string(button) + "  row " + std::to_string(row), 1);
@@ -243,6 +312,7 @@ void LibMain::ToggleButton(uint8_t button)
                 }
             }
         }
+        DisplayRefresh();
         // if (songname.compare("") != 0)
         //    PresetLongName(songname, x - Surface.Row[row].FirstShown);
     }
@@ -275,12 +345,12 @@ void LibMain::ProcessKnob(uint8_t row, uint8_t value)  // processes a midi messa
 
 bool LibMain::IsKnob(const uint8_t* data, int length)  // Is midi event from an expression pedal?
 {
-    return(data[0] == MIDI_CC_16 && data[1] >= MCX_KNOB_1 && data[1] <= MCX_KNOB_4);
+    return(data[0] == MIDI_CC_00 && data[1] >= MCX_KNOB_1 && data[1] <= MCX_KNOB_4);
 }
 
 
 bool LibMain::IsButton(const uint8_t* data, int length)   // Is midi event from a button?
 {
-    return(data[0] == MIDI_CC_16 && data[1] >= MCX_BUTTON_BASE && data[1] <= MCX_BUTTON_MAX);
+    return(data[0] == MIDI_CC_00 && data[1] >= MCX_BUTTON_BASE && data[1] <= MCX_BUTTON_MAX);
 }
 

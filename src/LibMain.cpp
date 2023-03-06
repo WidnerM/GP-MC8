@@ -38,7 +38,7 @@ std::string  LibMain::GetPanelXML(int index)
 
 
 // List of menu items
-std::vector<std::string> menuNames = { "MC8 Layout", "MC6 Layout", "MC6 Pro Layout" };
+std::vector<std::string> menuNames = { "MC8 Device", "MC6 Device", "MC6 Pro Device", "Preset X", "Preset Y"};
 
 
 int LibMain::GetMenuCount()
@@ -75,6 +75,12 @@ void LibMain::InvokeMenu(int index)
             SetSurfaceLayout("mc6 pro");
             break;
         case 3:
+            UpdatePresetMessage(0, 9, MSG_CC, ACTION_PRESS, TOGGLE_TYPE_BOTH, PRESET_SAVE, "55 7f 00");
+            break;
+        case 4:
+            UpdatePresetMessage(0, 10, 36, ACTION_LONGDOUBLETAP, TOGGLE_TYPE_BOTH, PRESET_SAVE, "08 37 00 3B"); // doesn't work, but should be the PresetMessage for setting a color
+            break;
+        case 5:
             OnStatusChanged(GPStatus_GigFinishedLoading);
             break;
 
@@ -137,7 +143,8 @@ void LibMain::SetSurfaceLayout(std::string config) {
         Surface.LongNameLen = MC8_LONGLEN;
     }
     Surface.Initialize();
-    DisplayRefresh();
+    OnRackspaceActivated();
+    // DisplayRefresh();
 }
 
 

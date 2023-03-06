@@ -66,10 +66,15 @@ public:
 
     // from Display.cpp - functions for displaying things on the MC8 display
     uint8_t calculateMCChecksum(uint16_t len, uint8_t *ptr);
-    gigperformer::sdk::GPMidiMessage makeMCMessage(std::string payload, uint8_t type, uint8_t column, uint8_t op4);
+    gigperformer::sdk::GPMidiMessage makeMCHexMessage(std::string hexpayload, uint8_t type, uint8_t op3, uint8_t op4, uint8_t op5, uint8_t op6);
+    gigperformer::sdk::GPMidiMessage makeMCMessage(std::string payload, uint8_t type, uint8_t column, uint8_t op4, uint8_t op5);
     gigperformer::sdk::GPMidiMessage makeMCMessage(std::string payload, uint8_t type, uint8_t column);
     void SendTextToMCx(std::string text, uint8_t op2, uint8_t op3, uint8_t op4);
     void PresetShortName(std::string text, uint8_t position);
+    void PresetToggleName(std::string text, uint8_t position);
+
+    void UpdatePresetMessage(uint8_t preset, uint8_t msgnum, uint8_t msgtype, uint8_t action, uint8_t toggle, uint8_t savetomem, std::string hexpayload);
+
     void PresetLongName(std::string text, uint8_t position);
     void CurrentBankName(std::string text);
     void LongPresetNames(std::string text);
@@ -77,7 +82,7 @@ public:
     void Notify(std::string text, uint8_t duration);
     void TogglePreset(uint8_t position, uint8_t value);
     void EngagePreset(uint8_t position, uint8_t value);
-    void TogglePage();
+    void TogglePage(uint8_t page);
 
     void InitializeMC8();
     void DisplayText(uint8_t column, uint8_t row, std::string text);
@@ -233,7 +238,7 @@ public:
         // Light the Play transport button according to play state.
         // Having the Play button start/stp the global playhead is controlled in Inputs.cpp via widget named sl_t_p
         // SetButtonColor(MKIII_TRANSPORT_PLAY, (playing ? 0x21 : 0x00));
-        // Notify("Play state changed.", 20);
+        Notify("Play state changed.", 20);
         // scriptLog("Play State change: " + std::to_string(playing), 1);
 
     }
@@ -289,7 +294,7 @@ public:
         else if (IsKnob(data, length))
         {
             ProcessKnob(data[1] - MCX_KNOB_1,
-                        data[2]); // pass the pedal position (0-4) and the value
+                        data[2]); // pass the pedal position (0-3) and the value
         }
         else
         {
@@ -544,7 +549,7 @@ public:
         CurrentBankName("GigPerformer\\nExtension");
         LongPresetNames("");
         if (Surface.Page == 1) {
-            SendTextToMCx("", 0x00, 0x02, 0x00); // page toggle
+            TogglePage(0); // go back to first page on exit
         }
 
     }

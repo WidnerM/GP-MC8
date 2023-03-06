@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <format>
 #include "LibMain.h"
 
 // Calculate the checksum required on all MCx messages
@@ -17,8 +18,37 @@ uint8_t LibMain::calculateMCChecksum(uint16_t len, uint8_t *ptr)
     return cSum;
 }
 
-// append a checksum and f7 to a hexstring, then convert to a GPMidiMessage
-gigperformer::sdk::GPMidiMessage LibMain::makeMCMessage(std::string payload, uint8_t type, uint8_t column, uint8_t op4)
+// append a checksum and f7 to a HEX STRING payload, then convert to a GPMidiMessage
+gigperformer::sdk::GPMidiMessage LibMain::makeMCHexMessage(std::string hexpayload, uint8_t type, uint8_t op3, uint8_t op4, uint8_t op5, uint8_t op6)
+{
+    gigperformer::sdk::GPMidiMessage midimessage;
+
+    // build 16 byte MC prefix + payload + append the 00 f7 into a GPMidiMessage
+    // textmessage = MC8_PREFIX + textToHexString(payload) + " 00 f7";
+    midimessage = gigperformer::sdk::GPMidiMessage(Surface.SysexPrefix + (std::string)" " + hexpayload + " 00 f7");
+    // scriptLog(textmessage, 1);
+
+    // set opcodes
+    midimessage.setValue(OPCODE_2, type);
+    midimessage.setValue(OPCODE_3, op3);
+    midimessage.setValue(OPCODE_4, op4);
+    midimessage.setValue(OPCODE_5, op5);
+    midimessage.setValue(OPCODE_6, op6);  // op6, 0x7f tells it MC to save it
+
+    // calculate and place checksum
+    midimessage.setValue(midimessage.length() - 2,
+        (uint8_t)calculateMCChecksum(midimessage.length(), midimessage.asBytes()));
+    return midimessage;
+}
+
+void LibMain::UpdatePresetMessage(uint8_t preset, uint8_t msgnum, uint8_t msgtype, uint8_t action, uint8_t toggle, uint8_t savetomem, std::string hexpayload)
+{
+    sendMidiMessage(makeMCHexMessage((std::string) std::format("{:02x} {:02x} ", 
+        action, toggle) + hexpayload, PRESETMSG_OP, preset, msgnum, msgtype, savetomem));
+}
+
+// append a checksum and f7 to a text string payload, then convert to a GPMidiMessage
+gigperformer::sdk::GPMidiMessage LibMain::makeMCMessage(std::string payload, uint8_t type, uint8_t column, uint8_t op4, uint8_t op5)
 {
     gigperformer::sdk::GPMidiMessage midimessage;
 
@@ -31,6 +61,7 @@ gigperformer::sdk::GPMidiMessage LibMain::makeMCMessage(std::string payload, uin
     midimessage.setValue(OPCODE_2, type);
     midimessage.setValue(OPCODE_3, column);
     midimessage.setValue(OPCODE_4, op4);
+    midimessage.setValue(OPCODE_5, op5);
 
     // calculate and place checksum
     midimessage.setValue(midimessage.length() - 2,
@@ -40,7 +71,7 @@ gigperformer::sdk::GPMidiMessage LibMain::makeMCMessage(std::string payload, uin
 
 gigperformer::sdk::GPMidiMessage LibMain::makeMCMessage(std::string payload, uint8_t type, uint8_t column)
 {
-    return LibMain::makeMCMessage(payload, type, column, 0);
+    return LibMain::makeMCMessage(payload, type, column, 0, 0);
 }
 
 // displays text on MCx based on opcodes supplied
@@ -52,7 +83,7 @@ void LibMain::SendTextToMCx(std::string text, uint8_t op2, uint8_t op3, uint8_t 
     // subtext = cleanSysex(text);
     // subtext = subtext.substr(0, 19);
     // binmessage = GPUtils::hex2binaryString(hexmessage);
-    midimessage = makeMCMessage(text, op2, op3, op4);
+    midimessage = makeMCMessage(text, op2, op3, op4, 0);
 
     sendMidiMessage(midimessage);
 }
@@ -60,21 +91,28 @@ void LibMain::SendTextToMCx(std::string text, uint8_t op2, uint8_t op3, uint8_t 
 // displays a message up to 20 characters for up to 20 seconds measured in 1/10ths of a second
 void LibMain::Notify(std::string text, uint8_t duration)
 {
-    SendTextToMCx(cleanSysex(text).substr(0,19), 0x11, 00, duration);
+    SendTextToMCx(cleanSysex(text).substr(0,19), MESSAGE_OP, 00, duration);
 }
 
 // displays short preset name at position
 void LibMain::PresetShortName(std::string text, uint8_t position)
 {
     std::string cleantext = cleanSysex(text) + (std::string) "                                                ";
-    SendTextToMCx(cleantext.substr(0,Surface.ShortNameLen), 0x01, position, 0x00);
+    SendTextToMCx(cleantext.substr(0,Surface.ShortNameLen), SHORTNAME_OP, position, 0x00);
 }
+
+void LibMain::PresetToggleName(std::string text, uint8_t position)
+{
+    std::string cleantext = cleanSysex(text) + (std::string)"                                                ";
+    SendTextToMCx(cleantext.substr(0, Surface.ShortNameLen), TOGGLENAME_OP, position, 0x00);
+}
+
 
 // sets preset long name name at position
 void LibMain::PresetLongName(std::string text, uint8_t position)
 {
     std::string cleantext = cleanSysex(text) + (std::string) "                                                   ";
-    SendTextToMCx(cleantext.substr(0, Surface.LongNameLen), 0x03, position, 0x00);
+    SendTextToMCx(cleantext.substr(0, Surface.LongNameLen), LONGNAME_OP, position, 0x00);
 }
 
 // sets all preset Long Names to this so it stays on screen regardless of current preset
@@ -89,7 +127,7 @@ void LibMain::LongPresetNames(std::string text)
 void LibMain::CurrentBankName(std::string text)
 {
     std::string cleantext = cleanSysex(text) + (std::string) "                                       ";
-    SendTextToMCx(cleantext.substr(0, Surface.LongNameLen), 0x10, 0, 0);
+    SendTextToMCx(cleantext.substr(0, Surface.LongNameLen), BANKNAME_OP, 0, 0);
 }
 
 
@@ -220,16 +258,21 @@ void LibMain::EngagePreset(uint8_t position, uint8_t value)
     sendMidiMessage(MidiMessage, sizeof(MidiMessage));
 }
 
-void LibMain::TogglePage()
+void LibMain::TogglePage(uint8_t page)
 {
-    EngagePreset(4, 0); // CC 4 [any] toggles page
+    if (Surface.Color) {
+        // on MC6 Pro we have to set up an action in a preset to go to the desired absolute page
+        EngagePreset(33, page == 0 ? ACTION_LONGDOUBLETAP : ACTION_LONGDOUBLETAPRELEASE);
+    }
+    else if (Surface.Page != page) EngagePreset(4, 0); // on mc8 we can only toggle page using CC 4 [any]
+    Surface.Page = page;
 }
 
 void LibMain::DisplayWidgetValue(const SurfaceRow &row, SurfaceWidget widget)
 { 
 
     PresetShortName(widget.Value > 0 ? widget.ShortNameOn : widget.ShortNameOff, row.FirstID + widget.Column);
-    TogglePreset(row.FirstID + widget.Column, widget.Value);
+    TogglePreset(row.FirstID + widget.Column, widget.Value == 0 ? 0 : 1);
     // PresetLongName(widget.LongName, Row.FirstID + widget.Column);
 }
 
@@ -258,10 +301,10 @@ void LibMain::DisplayRow(SurfaceRow row)
             DisplayButtons(row, 0, Surface.RowLen);
             break;
         case SHOW_RACKS_SONGS:
-            DisplayVariations(row, 0, Surface.RowLen, true);
+            DisplayVariations(row, 0, Surface.RowLen, false);
             break;
         case SHOW_VARS_PARTS:
-            DisplayVariations(row, 0, Surface.RowLen, true);
+            DisplayVariations(row, 0, Surface.RowLen, false);
             break;
         case SHOW_KNOBS:
             DisplayKnobs(row);
@@ -273,11 +316,10 @@ void LibMain::DisplayRow(SurfaceRow row)
 
 void LibMain::DisplayRefresh()
 {
-
-    DisplayRow(Surface.Row[BOTTOM_ROW]);
     DisplayRow(Surface.Row[TOP_ROW]);
-    DisplayRow(Surface.Row[B2_ROW]);
+    DisplayRow(Surface.Row[BOTTOM_ROW]);
     DisplayRow(Surface.Row[T2_ROW]);
+    DisplayRow(Surface.Row[B2_ROW]);
 }
 
 void LibMain::ClearDisplayRow(SurfaceRow row)
