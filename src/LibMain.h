@@ -100,7 +100,6 @@ public:
     void ShowKnobLabel(uint8_t column, const std::string caption);
 
     void DisplayWidgetValue(const SurfaceRow &row, SurfaceWidget widget);
-    void DisplayPresetLongname(const SurfaceRow& row, uint8_t column, std::string value);
 
     void DisplayRow(SurfaceRow row);
     void DisplayVariations(SurfaceRow & row, uint8_t firstbutton, uint8_t number, bool forcetocurrent);
@@ -117,10 +116,6 @@ public:
 
     bool IsKnob(const uint8_t* data, int length);
     bool IsButton(const uint8_t* data, int length);
-
-    bool RowNextBank(SurfaceRow & row);
-    bool RowPreviousBank(SurfaceRow & row);
-
 
     // from Knobs.cpp
     void DisplayKnobs(SurfaceRow row);  // Shows the active knob bank (as stored in Surface.Row[].ActiveBank)

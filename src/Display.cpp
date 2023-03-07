@@ -4,6 +4,8 @@
 #include <string>
 #include <sstream>
 #include <format>
+// #define FMT_HEADER_ONLY
+// #include "fmt/format.h"
 #include "LibMain.h"
 
 // Calculate the checksum required on all MCx messages
@@ -276,19 +278,6 @@ void LibMain::DisplayWidgetValue(const SurfaceRow &row, SurfaceWidget widget)
     // PresetLongName(widget.LongName, Row.FirstID + widget.Column);
 }
 
-void LibMain::DisplayPresetLongname(const SurfaceRow& row, uint8_t column, std::string text)
-{
-    /*  if (Row.Type == KNOB_TYPE)
-    {
-        DisplayText(column, 1, line1);
-        // DisplayText(column, 0, line2);
-    }
-    else if (Row.Type == BUTTON_TYPE) */
-        PresetLongName(text, row.FirstID + column);
-    // else if (Row.Type == PAD_TYPE) Notify(line1, 10);
-}
-
-
 void LibMain::DisplayRow(SurfaceRow row)
 {
     ResetBankIndicators(row);
@@ -320,6 +309,10 @@ void LibMain::DisplayRefresh()
     DisplayRow(Surface.Row[BOTTOM_ROW]);
     DisplayRow(Surface.Row[T2_ROW]);
     DisplayRow(Surface.Row[B2_ROW]);
+    // DisplayRow(Surface.Row[E1_ROW]);  // Update preset Long Names for expression pedals
+    // DisplayRow(Surface.Row[E2_ROW]);  // not currently implemented in MC8 or MC6 Pro (crashes them)
+    // DisplayRow(Surface.Row[E3_ROW]);
+    // DisplayRow(Surface.Row[E4_ROW]);
 }
 
 void LibMain::ClearDisplayRow(SurfaceRow row)

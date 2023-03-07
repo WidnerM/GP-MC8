@@ -130,28 +130,29 @@ void LibMain::DisplayVariations(SurfaceRow & row, uint8_t firstbutton, uint8_t n
         x = current % Surface.RowLen; // we're going to show in banks of Surface.RowLen, this is the offset
         row.FirstShown = current - x;
     }
+    if (row.WidgetID == BOTTOM_TAG && row.Showing == Surface.Row[TOP_ROW].Showing)  // if we're on BOTTOM_ROW and showing same as TOP_ROW
+    {
+        row.FirstShown = Surface.Row[TOP_ROW].FirstShown + Surface.RowLen; // then set our first shown to the next Rack/Song/Songpart/Variation
+    }
+    else if (row.WidgetID == B2_TAG && row.Showing == Surface.Row[T2_ROW].Showing)  // if we're on BOTTOM_ROW and showing same as TOP_ROW
+    {
+        row.FirstShown = Surface.Row[T2_ROW].FirstShown + Surface.RowLen; // then set our first shown to the next Rack/Song/Songpart/Variation
+    }
     else
     {
         if (row.FirstShown >= count)
         {
             // row.FirstShown -= Surface.RowLen;
-            row.FirstShown = count - count % Surface.RowLen;
+            // row.FirstShown = count - count % Surface.RowLen;
             // row.FirstShown = 0;
+            row.FirstShown = row.FirstShown - Surface.RowLen;
         }
+        if (row.FirstShown >= count) row.FirstShown = row.FirstShown - Surface.RowLen; // twice of in double rows
         if (row.FirstShown < 0)
         {
             row.FirstShown = 0;
         }
     }
-    if (row.WidgetID == BOTTOM_TAG && row.Showing == Surface.Row[TOP_ROW].Showing)  // if we're on BOTTOM_ROW and showing same as TOP_ROW
-    {
-        row.FirstShown = Surface.Row[TOP_ROW].FirstShown + row.Columns; // then set our first shown to the next Rack/Song/Songpart/Variation
-    }
-    else if (row.WidgetID == B2_TAG && row.Showing == Surface.Row[T2_ROW].Showing)  // if we're on BOTTOM_ROW and showing same as TOP_ROW
-    {
-        row.FirstShown = Surface.Row[T2_ROW].FirstShown + row.Columns; // then set our first shown to the next Rack/Song/Songpart/Variation
-    }
-
 
     positionindex = row.FirstShown;
 

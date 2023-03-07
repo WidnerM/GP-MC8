@@ -15,7 +15,7 @@ void LibMain::DisplayKnobs(SurfaceRow row)
     {
         widgetname = row.WidgetPrefix + (std::string)"p_" + row.ActiveBankID() + (std::string)"_0";
         if (widgetExists(widgetname)) {
-            // DisplayPresetLongname(row, 0, getWidgetCaption(widgetname)); // currently crashes MC8
+            // PresetLongName(getWidgetCaption(widgetname), row.FirstID); // currently crashes MC8
         }
     }
 }

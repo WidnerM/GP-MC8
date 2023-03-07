@@ -28,7 +28,7 @@
 
 #define MCX_ACTION_DOWN 0x00
 #define MCX_ACTION_SELECT 0x01
-#define MCX_ACTION_OTHER 0x02
+#define MCX_ACTION_PAGE 0x02
 #define MCX_ACTION_UP 0x03
 
 #define MCX_PAGE1 0x28

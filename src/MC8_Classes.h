@@ -271,7 +271,7 @@ public:
 			Row[x].RowLabel = row_labels[x];
 			Row[x].Type = row_types[x];
 			// Row[x].Columns = row_columns[x];
-			if (x > 3) { Row[x].FirstID = 0; Row[x].Columns = 1; } // we don't send midi to expression rows, all are 1 column
+			if (x > 3) { Row[x].FirstID = 24 + x; Row[x].Columns = 1; } // we don't send midi to expression rows, all are 1 column
 			else { Row[x].FirstID = x * RowLen; Row[x].Columns = RowLen; }
             Row[x].Showing = row_showing[x];
 			// Row[x].FirstIDsysex = first_sysex[x];
