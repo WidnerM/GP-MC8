@@ -3,9 +3,14 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+
+#if defined(__APPLE__)
+ #define FMT_HEADER_ONLY
+ #include "fmt/format.h"
+#else
 #include <format>
-// #define FMT_HEADER_ONLY
-// #include "fmt/format.h"
+#endif
+
 #include "LibMain.h"
 
 // Calculate the checksum required on all MCx messages
