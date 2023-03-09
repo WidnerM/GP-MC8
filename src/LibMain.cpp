@@ -38,7 +38,7 @@ std::string  LibMain::GetPanelXML(int index)
 
 
 // List of menu items
-std::vector<std::string> menuNames = { "MC8 Device", "MC6 Device", "MC6 Pro Device", "Preset X", "Preset Y"};
+std::vector<std::string> menuNames = { "MC8 Device", "MC6 Device", "MC6 Pro Device"};
 
 
 int LibMain::GetMenuCount()

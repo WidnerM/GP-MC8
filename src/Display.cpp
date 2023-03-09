@@ -23,7 +23,6 @@ gigperformer::sdk::GPMidiMessage LibMain::makeMCHexMessage(std::string hexpayloa
     gigperformer::sdk::GPMidiMessage midimessage;
 
     // build 16 byte MC prefix + payload + append the 00 f7 into a GPMidiMessage
-    // textmessage = MC8_PREFIX + textToHexString(payload) + " 00 f7";
     midimessage = gigperformer::sdk::GPMidiMessage(Surface.SysexPrefix + hexpayload + "00 f7");
     // scriptLog(textmessage, 1);
 
@@ -40,6 +39,9 @@ gigperformer::sdk::GPMidiMessage LibMain::makeMCHexMessage(std::string hexpayloa
     return midimessage;
 }
 
+// sends sysex message to MCx to update a "message" sent by that preset when the appropriate action is taken
+// this is intended primarily for changing colors.  We should be able to create a message, then execute that action
+// using the EngagePreset(preset, action) function to execute the color change.
 void LibMain::UpdatePresetMessage(uint8_t preset, uint8_t msgnum, uint8_t msgtype, uint8_t action, uint8_t toggle, uint8_t savetomem, std::string hexpayload)
 {
     gigperformer::sdk::GPMidiMessage midimessage;
@@ -52,7 +54,7 @@ void LibMain::UpdatePresetMessage(uint8_t preset, uint8_t msgnum, uint8_t msgtyp
     midimessage.setValue(OPCODE_5, (uint8_t) msgtype);
     midimessage.setValue(OPCODE_6, (uint8_t) savetomem);  // op6, 0x7f tells it MC to save it
     
-    // First two bytes of the payload are always action type and toggle type
+    // First two bytes of the payload are always(?) action type and toggle type
     midimessage.setValue(16, action);
     midimessage.setValue(17, toggle);
 
