@@ -3,14 +3,6 @@
 #include <iostream>
 #include <string>
 #include <sstream>
-
-#if defined(__APPLE__)
- #define FMT_HEADER_ONLY
- #include "fmt/format.h"
-#else
-#include <format>
-#endif
-
 #include "LibMain.h"
 
 // Calculate the checksum required on all MCx messages
@@ -32,7 +24,7 @@ gigperformer::sdk::GPMidiMessage LibMain::makeMCHexMessage(std::string hexpayloa
 
     // build 16 byte MC prefix + payload + append the 00 f7 into a GPMidiMessage
     // textmessage = MC8_PREFIX + textToHexString(payload) + " 00 f7";
-    midimessage = gigperformer::sdk::GPMidiMessage(Surface.SysexPrefix + (std::string)" " + hexpayload + " 00 f7");
+    midimessage = gigperformer::sdk::GPMidiMessage(Surface.SysexPrefix + hexpayload + "00 f7");
     // scriptLog(textmessage, 1);
 
     // set opcodes
@@ -50,8 +42,27 @@ gigperformer::sdk::GPMidiMessage LibMain::makeMCHexMessage(std::string hexpayloa
 
 void LibMain::UpdatePresetMessage(uint8_t preset, uint8_t msgnum, uint8_t msgtype, uint8_t action, uint8_t toggle, uint8_t savetomem, std::string hexpayload)
 {
-    sendMidiMessage(makeMCHexMessage((std::string) std::format("{:02x} {:02x} ", 
-        action, toggle) + hexpayload, PRESETMSG_OP, preset, msgnum, msgtype, savetomem));
+    gigperformer::sdk::GPMidiMessage midimessage;
+
+    midimessage = gigperformer::sdk::GPMidiMessage(Surface.SysexPrefix + (std::string) "00 00" + hexpayload + "00 f7");
+
+    midimessage.setValue(OPCODE_2, (uint8_t) PRESETMSG_OP);
+    midimessage.setValue(OPCODE_3, (uint8_t) preset);
+    midimessage.setValue(OPCODE_4, (uint8_t) msgnum);
+    midimessage.setValue(OPCODE_5, (uint8_t) msgtype);
+    midimessage.setValue(OPCODE_6, (uint8_t) savetomem);  // op6, 0x7f tells it MC to save it
+    
+    // First two bytes of the payload are always action type and toggle type
+    midimessage.setValue(16, action);
+    midimessage.setValue(17, toggle);
+
+
+    midimessage.setValue(midimessage.length() - 2,
+        (uint8_t)calculateMCChecksum(midimessage.length(), midimessage.asBytes()));
+    sendMidiMessage(midimessage);
+
+    // sendMidiMessage(makeMCHexMessage((std::string) std::format("{:02x} {:02x} ", 
+    //    action, toggle) + hexpayload, PRESETMSG_OP, preset, msgnum, msgtype, savetomem));
 }
 
 // append a checksum and f7 to a text string payload, then convert to a GPMidiMessage
