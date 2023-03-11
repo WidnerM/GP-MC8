@@ -118,7 +118,7 @@ void LibMain::ProcessButton(uint8_t button, uint8_t value)  // processes a midi 
                 {
                 case SHOW_BUTTONS:
                     Surface.Row[thisrow].Showing = SHOW_RACKS_SONGS;
-                    if (doublesync)
+                    if (doublesync || Surface.Row[otherrow].Showing == SHOW_RACKS_SONGS)
                     {
                         // scriptLog("Going buttons to racks, otherrow = " + std::to_string(otherrow), 1);
                         Surface.Row[otherrow].Showing = SHOW_RACKS_SONGS;
@@ -129,7 +129,7 @@ void LibMain::ProcessButton(uint8_t button, uint8_t value)  // processes a midi 
                     break;
                 case SHOW_RACKS_SONGS:
                     Surface.Row[thisrow].Showing = SHOW_VARS_PARTS;
-                    if (doublesync)
+                    if (doublesync || Surface.Row[otherrow].Showing == SHOW_VARS_PARTS)
                     {
                         // scriptLog("Going to Racks to variations, otherrow = " + std::to_string(otherrow), 1);
                         Surface.Row[otherrow].Showing = SHOW_VARS_PARTS;
@@ -157,7 +157,7 @@ void LibMain::ProcessButton(uint8_t button, uint8_t value)  // processes a midi 
                     else
                     {
                         Surface.Row[thisrow].Showing = SHOW_RACKS_SONGS;
-                        if (doublesync)
+                        if (doublesync || Surface.Row[otherrow].Showing == SHOW_RACKS_SONGS)
                         {
                             // scriptLog("Going Variation to Racks, otherrow = " + std::to_string(otherrow), 1);
                             Surface.Row[otherrow].Showing = SHOW_RACKS_SONGS;

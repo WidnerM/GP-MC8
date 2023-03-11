@@ -540,8 +540,8 @@ public:
         ClearDisplayRow(Surface.Row[TOP_ROW]);
         ClearDisplayRow(Surface.Row[B2_ROW]);
         ClearDisplayRow(Surface.Row[T2_ROW]);
-        if (Surface.Color) EngagePreset(33, 3);
-        CurrentBankName("GigPerformer\\nExtension");
+        if (Surface.Color) { EngagePreset(33, 3); CurrentBankName("GigPerformer\\nExtension");}
+        else CurrentBankName("GigPerformer Extension");
         LongPresetNames("");
         if (Surface.Page == 1) {
             TogglePage(0); // go back to first page on exit
