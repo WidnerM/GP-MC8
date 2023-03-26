@@ -66,9 +66,9 @@
 
 #define LAYOUT_WIDGETNAME "mcx_layout"
 #define EXTENSION_IDENTIFIER "Morningstar MCx Extension"
-#define MCX_MIDI_IN "MIDIIN2 (Morningstar MC8)"
+#define MCX_MIDI_IN "MIDIIN2 (Morningstar MC8)", "MIDIIN2 (Morningstar MC6 Pro)", "MIDIIN2 (Morningstar MC6)"
 #define MIDI_IN_WIDGETNAME "mcx_midiin"
-#define MCX_MIDI_OUT "MIDIOUT2 (Morningstar MC8)"
+#define MCX_MIDI_OUT "MIDIOUT2 (Morningstar MC8)", "MIDIOUT2 (Morningstar MC6 Pro)", "MIDIOUT2 (Morningstar MC6)"
 #define MIDI_OUT_WIDGETNAME "mcx_midiout"
 #define MCX_CONFIG_WIDGETNAME "mcx_row_config"
 #define MCX_INITIAL_CONFIG_WIDGETNAME "mcx_initial_row_config"
