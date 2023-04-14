@@ -165,6 +165,9 @@ public:
             for (int j = 0; j < MidiOut.size(); j++) {
                 if (name == MidiOut[j]) {
                     foundout = true;
+                    if (name.find("MC8)") != std::string::npos) { SetSurfaceLayout("mc8"); }
+                    else if (name.find("MC6)") != std::string::npos) { SetSurfaceLayout("mc6"); }
+                    else if (name.find("MC6 Pro)") != std::string::npos) { SetSurfaceLayout("mc6 pro"); }
                     validOutPorts.push_back(name);
                     scriptLog("MCX:  Using midi out " + name, 0);
                 }
