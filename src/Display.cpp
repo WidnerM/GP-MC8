@@ -111,7 +111,7 @@ void LibMain::SendTextToMCx(std::string text, uint8_t op2, uint8_t op3, uint8_t 
 // displays a message up to 20 characters for up to 20 seconds measured in 1/10ths of a second
 void LibMain::Notify(std::string text, uint8_t duration)
 {
-    SendTextToMCx(cleanSysex(text).substr(0,19), MESSAGE_OP, 00, duration);
+    SendTextToMCx(cleanSysex(text).substr(0, 19), MESSAGE_OP, 00, duration);
 }
 
 // displays short preset name at position

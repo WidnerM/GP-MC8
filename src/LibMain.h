@@ -202,7 +202,7 @@ public:
             registerCallback("OnSongChanged");
             registerCallback("OnSongPartChanged");
             registerCallback("OnModeChanged");
-            registerCallback("OnGlobalPlayStateChanged");
+            // registerCallback("OnGlobalPlayStateChanged");
 
             registerCallback("OnMidiIn");
 
@@ -231,12 +231,12 @@ public:
 
 
         
-    void OnGlobalPlayStateChanged(bool playing) override
+    void OnGlobalPlayStateChanged(double playing) override
     {
         // Light the Play transport button according to play state.
         // Having the Play button start/stp the global playhead is controlled in Inputs.cpp via widget named sl_t_p
         // SetButtonColor(MKIII_TRANSPORT_PLAY, (playing ? 0x21 : 0x00));
-        Notify("Play state changed.", 20);
+        // Notify("Play state changed.", 20);
         // scriptLog("Play State change: " + std::to_string(playing), 1);
 
     }
