@@ -484,7 +484,7 @@ public:
                 if (Surface.Color) EngagePreset(33, 1);
             }
         }
-    } 
+    }
 
 
     // Called when variation changed
