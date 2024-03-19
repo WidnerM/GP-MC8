@@ -296,7 +296,7 @@ void LibMain::DisplayWidgetValue(const SurfaceRow &row, SurfaceWidget widget)
     // PresetLongName(widget.LongName, Row.FirstID + widget.Column);
 }
 
-void LibMain::DisplayRow(SurfaceRow row)
+void LibMain::DisplayRow(SurfaceRow & row, bool forcetocurrent) /* forcetocurrent = 0 */
 {
     ResetBankIndicators(row);
     // if (row.WidgetID.compare(BOTTOM_TAG) == 0 )
@@ -308,10 +308,10 @@ void LibMain::DisplayRow(SurfaceRow row)
             DisplayButtons(row, 0, Surface.RowLen);
             break;
         case SHOW_RACKS_SONGS:
-            DisplayVariations(row, 0, Surface.RowLen, false);
+            DisplayVariations(row, 0, Surface.RowLen, forcetocurrent);
             break;
         case SHOW_VARS_PARTS:
-            DisplayVariations(row, 0, Surface.RowLen, false);
+            DisplayVariations(row, 0, Surface.RowLen, forcetocurrent);
             break;
         case SHOW_KNOBS:
             DisplayKnobs(row);
@@ -321,12 +321,12 @@ void LibMain::DisplayRow(SurfaceRow row)
     // else if (row.Type == BUTTON_TYPE ) DisplayButtons(row, 0, 4);
 }
 
-void LibMain::DisplayRefresh()
+void LibMain::DisplayRefresh(bool forcetocurrent) /* forcetocurrent = 0 */
 {
-    DisplayRow(Surface.Row[TOP_ROW]);
-    DisplayRow(Surface.Row[BOTTOM_ROW]);
-    DisplayRow(Surface.Row[T2_ROW]);
-    DisplayRow(Surface.Row[B2_ROW]);
+    DisplayRow(Surface.Row[TOP_ROW], forcetocurrent);
+    DisplayRow(Surface.Row[BOTTOM_ROW], forcetocurrent);
+    DisplayRow(Surface.Row[T2_ROW], forcetocurrent);
+    DisplayRow(Surface.Row[B2_ROW], forcetocurrent);
     // DisplayRow(Surface.Row[E1_ROW]);  // Update preset Long Names for expression pedals
     // DisplayRow(Surface.Row[E2_ROW]);  // not currently implemented in MC8 or MC6 Pro (crashes them)
     // DisplayRow(Surface.Row[E3_ROW]);

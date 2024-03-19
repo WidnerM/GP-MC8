@@ -85,7 +85,7 @@ std::string LibMain::makeVariationText(SurfaceRow row, int index)
 }
 
 // as of now there's no difference between DisplayRacks and DisplayVariations
-void LibMain::DisplayRacks(SurfaceRow& row, uint8_t firstbutton, uint8_t number, bool forcetocurrent)
+void LibMain::DisplayRacks(SurfaceRow & row, uint8_t firstbutton, uint8_t number, bool forcetocurrent)
 {
     DisplayVariations(row, firstbutton, number, forcetocurrent);
 }
@@ -147,7 +147,7 @@ void LibMain::DisplayVariations(SurfaceRow & row, uint8_t firstbutton, uint8_t n
             // row.FirstShown = 0;
             row.FirstShown = row.FirstShown - Surface.RowLen;
         }
-        if (row.FirstShown >= count) row.FirstShown = row.FirstShown - Surface.RowLen; // twice of in double rows
+        if (row.FirstShown >= count) row.FirstShown = row.FirstShown - Surface.RowLen; // twice if in double rows
         if (row.FirstShown < 0)
         {
             row.FirstShown = 0;
@@ -170,7 +170,7 @@ void LibMain::DisplayVariations(SurfaceRow & row, uint8_t firstbutton, uint8_t n
             variationname = makeVariationText(row, positionindex);
             if (positionindex == current)
             {
-                variationname = (std::string) "(" + variationname.substr(0, Surface.ShortNameLen - 2) + ")";
+                if (!Surface.Color) variationname = (std::string) "(" + variationname.substr(0, Surface.ShortNameLen - 2) + ")";
                 TogglePreset(row.FirstID + x, 1); // turn toggle off
             }
             else TogglePreset(row.FirstID + x, 0); // turn toggle on

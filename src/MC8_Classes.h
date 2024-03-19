@@ -253,6 +253,7 @@ public:
 	bool Initialize()
 	{
 		int x;
+		LastRackspace = -1;
 		std::string row_prefixes[] = ROW_PREFIX_ARRAY;
 		std::string row_tags[] = TAG_ARRAY;
 		std::string row_types[] = ROW_TYPE_ARRAY;

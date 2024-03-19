@@ -143,7 +143,7 @@ void LibMain::SetSurfaceLayout(std::string config) {
         Surface.LongNameLen = MC8_LONGLEN;
     }
     Surface.Initialize();
-    OnRackspaceActivated();
+    // OnRackspaceActivated();
     // DisplayRefresh();
 }
 

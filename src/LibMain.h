@@ -101,11 +101,11 @@ public:
 
     void DisplayWidgetValue(const SurfaceRow &row, SurfaceWidget widget);
 
-    void DisplayRow(SurfaceRow row);
+    void DisplayRow(SurfaceRow & row, bool forcetocurrent = 0);
     void DisplayVariations(SurfaceRow & row, uint8_t firstbutton, uint8_t number, bool forcetocurrent);
     void DisplayRacks(SurfaceRow & row, uint8_t firstbutton, uint8_t number, bool forcetocurrent);
 
-    void DisplayRefresh();
+    void DisplayRefresh(bool forcetocurrent = 0);
     void ClearDisplayRow(SurfaceRow row);
 
 
@@ -473,14 +473,14 @@ public:
             {
                 CurrentBankName(getSongName(getCurrentSongIndex()));
                 LongPresetNames(getSongpartName(getCurrentSongIndex(), getCurrentSongpartIndex()));
-                DisplayRefresh();
-                if (Surface.Color) EngagePreset(33, 2);
+                DisplayRefresh(true);  // force display of rackspaces/songs/variations/songparts to include current
+                if (Surface.Color) EngagePreset(33, 2); // this is what we have to do to change the Pro color pallette (for now)
             }
             else
             {
                 CurrentBankName(getRackspaceName(getCurrentRackspaceIndex()));
                 LongPresetNames(getVariationName(getCurrentRackspaceIndex(), getCurrentVariationIndex()));
-                DisplayRefresh();
+                DisplayRefresh(true); // force display of rackspaces/songs/variations/songparts to include current
                 if (Surface.Color) EngagePreset(33, 1);
             }
         }
@@ -504,7 +504,7 @@ public:
 
         LongPresetNames(getVariationName(getCurrentRackspaceIndex(), newIndex));
 
-        DisplayRefresh();
+        DisplayRefresh(true); // force display to include current rack/variation
 
 
         // Notify("Variation: " + newIndex);
