@@ -138,9 +138,18 @@ void LibMain::PresetLongName(std::string text, uint8_t position)
 // sets all preset Long Names to this so it stays on screen regardless of current preset
 void LibMain::LongPresetNames(std::string text)
 {
-    for (uint8_t x = 0; x < 22; x++)
-        PresetLongName(text, x);
-    if (Surface.Color) PresetLongName(text, 23);
+    if (Surface.Color)
+    {
+        // PresetLongName(text, 23);
+        PresetLongName(text, 22); // just putting the preset longname here
+        // EngagePreset(23, 1); // engage to display the preset longname
+        // switch back to whatever preset we're supposed to be on...
+    }
+    else
+    {
+        for (uint8_t x = 0; x < 22; x++)
+            PresetLongName(text, x);
+    }
 }
 
 // sets preset long name name at position

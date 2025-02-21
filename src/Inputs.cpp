@@ -286,7 +286,7 @@ void LibMain::ToggleButton(uint8_t button)
                 }
             }
         }
-        DisplayRefresh();
+        // DisplayRefresh();
         // if (songname.compare("") != 0)
         //    PresetLongName(songname, x - Surface.Row[row].FirstShown);
     }

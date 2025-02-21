@@ -38,7 +38,7 @@ std::string  LibMain::GetPanelXML(int index)
 
 
 // List of menu items
-std::vector<std::string> menuNames = { "MC8 Device", "MC6 Device", "MC6 Pro Device"};
+std::vector<std::string> menuNames = { "MC8 Device", "MC6 Device", "MC6 Pro Device", "Preset 23"};
 
 
 int LibMain::GetMenuCount()
@@ -75,7 +75,7 @@ void LibMain::InvokeMenu(int index)
             SetSurfaceLayout("mc6 pro");
             break;
         case 3:
-            UpdatePresetMessage(0, 9, MSG_CC, ACTION_PRESS, TOGGLE_TYPE_BOTH, PRESET_SAVE, "10 12 00");
+            EngagePreset(32, 1);
             break;
         case 4:
             UpdatePresetMessage(0, 10, 36, ACTION_LONGDOUBLETAP, TOGGLE_TYPE_BOTH, PRESET_SAVE, "08 37 00 3B"); // doesn't work, but should be the PresetMessage for setting a color

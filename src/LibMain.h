@@ -250,7 +250,6 @@ public:
     // When a widget that we are listening for is changed by any means (screen, midi, OSC, extension) this is called.
     void OnWidgetValueChanged(const std::string & widgetname, double newValue) override
     {
-        int x;
         SurfaceWidget widget;
         std::string widget_prefix, control_type, control_bank, control_number;
 
@@ -288,6 +287,7 @@ public:
             scriptLog(deviceName, 1); */
 
             ProcessButton(data[1], data[2]);  // it's a button press
+            EngagePreset(32, 1);
         }
         else if (IsKnob(data, length))
         {
@@ -316,7 +316,7 @@ public:
     {
         // scriptLog("Song changed to number " + std::to_string(newIndex), 1);
         // Surface.BottomMode = SHOW_SONGPARTS;
-        CurrentBankName(getSongName(newIndex));
+        CurrentBankName(getSongName(newIndex)); // sets label of center screen
     } 
 
     // Called when entering song mode
@@ -327,7 +327,7 @@ public:
             // scriptLog("Entered setlist mode.", 1);
             // SetButtonColor(MKIII_CLEAR, Surface.BottomColor[SHOW_RACKSPACES]);
             // Surface.BottomMode = SHOW_SONGS;
-            if (Surface.Color) EngagePreset(33, 2);
+            if (Surface.Color) EngagePreset(33, 2); // screen background color is triggerd on preset 33
             CurrentBankName(getSongName(getCurrentSongIndex()));
             LongPresetNames(getSongpartName(getCurrentSongIndex(), getCurrentSongpartIndex()));
             DisplayRefresh();
@@ -483,6 +483,7 @@ public:
                 DisplayRefresh(true); // force display of rackspaces/songs/variations/songparts to include current
                 if (Surface.Color) EngagePreset(33, 1);
             }
+            EngagePreset(32, 1);
         }
     }
 
@@ -490,7 +491,7 @@ public:
     // Called when variation changed
     void OnVariationChanged(int oldIndex, int newIndex) override
     {
-        // scriptLog("Variation Changed from " + std::to_string(oldIndex) + " to " + std::to_string(newIndex) + "; GetCurrentVariation says " + std::to_string(getCurrentVariationIndex()), 1);
+        scriptLog("Variation Changed from " + std::to_string(oldIndex) + " to " + std::to_string(newIndex) + "; GetCurrentVariation says " + std::to_string(getCurrentVariationIndex()), 1);
 
         //if (Surface.BottomMode == SHOW_VARIATIONS) { DisplayBottom(true); }
         
@@ -505,7 +506,7 @@ public:
         LongPresetNames(getVariationName(getCurrentRackspaceIndex(), newIndex));
 
         DisplayRefresh(true); // force display to include current rack/variation
-
+        EngagePreset(32, 1);
 
         // Notify("Variation: " + newIndex);
     }
@@ -537,7 +538,6 @@ public:
     void OnClose() override
     {
         std::string hexstring, binstring;
-        uint8_t x;
 
         ClearDisplayRow(Surface.Row[BOTTOM_ROW]);
         ClearDisplayRow(Surface.Row[TOP_ROW]);
