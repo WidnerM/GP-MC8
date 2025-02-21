@@ -491,7 +491,7 @@ public:
     // Called when variation changed
     void OnVariationChanged(int oldIndex, int newIndex) override
     {
-        scriptLog("Variation Changed from " + std::to_string(oldIndex) + " to " + std::to_string(newIndex) + "; GetCurrentVariation says " + std::to_string(getCurrentVariationIndex()), 1);
+        // scriptLog("Variation Changed from " + std::to_string(oldIndex) + " to " + std::to_string(newIndex) + "; GetCurrentVariation says " + std::to_string(getCurrentVariationIndex()), 0);
 
         //if (Surface.BottomMode == SHOW_VARIATIONS) { DisplayBottom(true); }
         

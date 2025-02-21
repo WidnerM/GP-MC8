@@ -132,7 +132,7 @@ void LibMain::PresetToggleName(std::string text, uint8_t position)
 void LibMain::PresetLongName(std::string text, uint8_t position)
 {
     std::string cleantext = cleanSysex(text) + (std::string) "                                                   ";
-    SendTextToMCx(cleantext.substr(0, Surface.LongNameLen), LONGNAME_OP, position, 0x00);
+    SendTextToMCx(cleantext.substr(0, Surface.LongNameLen), LONGNAME_OP, position, 0x7f);
 }
 
 // sets all preset Long Names to this so it stays on screen regardless of current preset
