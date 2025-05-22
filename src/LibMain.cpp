@@ -126,6 +126,14 @@ void LibMain::SetSurfaceLayout(std::string config) {
         Surface.ShortNameLen = MC6PRO_SHORTLEN;
         Surface.LongNameLen = MC6PRO_LONGLEN;
     }
+    else if (config.compare("mc8 pro") == 0)
+    {
+        Surface.SysexPrefix = MC8PRO_PREFIX;
+        Surface.Color = MC8PRO_COLOR;
+        Surface.RowLen = MC8PRO_ROWLEN;
+        Surface.ShortNameLen = MC8PRO_SHORTLEN;
+        Surface.LongNameLen = MC8PRO_LONGLEN;
+    }
     else if (config.compare("mc6") == 0)
     {
         Surface.SysexPrefix = MC6_PREFIX;
