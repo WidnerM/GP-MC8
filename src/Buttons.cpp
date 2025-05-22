@@ -39,7 +39,7 @@ void LibMain::DisplayButtons(SurfaceRow row, uint8_t firstbutton, uint8_t number
             {
                 widget.ShortNameOff = "";
                 widget.ShortNameOn = "";
-                widget.LongName = "";
+                widget.LongName = "##";
                 widget.Column = x;
                 DisplayWidgetValue(row, widget);
             }
