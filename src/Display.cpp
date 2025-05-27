@@ -141,7 +141,8 @@ void LibMain::LongPresetNames(std::string text)
     if (Surface.Color)
     {
         // PresetLongName(text, 23);
-        PresetLongName(text, 22); // just putting the preset longname here
+        PresetLongName(text, 22); // putting the preset longname (variation or songpart) here
+		EngagePreset(32, 1); // engage that preset to display the longname
         // EngagePreset(23, 1); // engage to display the preset longname
         // switch back to whatever preset we're supposed to be on...
     }
