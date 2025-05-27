@@ -481,9 +481,13 @@ public:
             {
                 CurrentBankName(getRackspaceName(getCurrentRackspaceIndex()));
                 LongPresetNames(getVariationName(getCurrentRackspaceIndex(), getCurrentVariationIndex()));
+                // scriptLog("OnRackspaceActivated: GetCurrentVariation says " + getVariationName(getCurrentRackspaceIndex(), getCurrentVariationIndex()), 0);
+
                 DisplayRefresh(true); // force display of rackspaces/songs/variations/songparts to include current
                 if (Surface.Color) EngagePreset(33, 1);
             }
+
+			// set the longpresetname for the current variation or songpart
             EngagePreset(32, 1);
         }
     }
@@ -507,7 +511,7 @@ public:
         LongPresetNames(getVariationName(getCurrentRackspaceIndex(), newIndex));
 
         DisplayRefresh(true); // force display to include current rack/variation
-        EngagePreset(32, 1);
+        EngagePreset(32, 1); // we store the current variation name in preset 22's LongPresetName slot (and CC to engage is preset + 10)
 
         // Notify("Variation: " + newIndex);
     }
