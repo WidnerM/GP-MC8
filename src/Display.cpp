@@ -3,7 +3,7 @@
 #include <iostream>
 #include <string>
 #include <sstream>
-#include <format>
+// #include <format>   // C++20 format not supported on macOS GitHub Actions
 #include "LibMain.h"
 
 // Calculate the checksum required on all MCx messages
@@ -42,7 +42,17 @@ gigperformer::sdk::GPMidiMessage LibMain::makeMCHexMessage(std::string hexpayloa
 
 std::string LibMain::PresetPayload(uint8_t action, uint8_t toggle, uint8_t number, uint8_t value, uint8_t channel)
 {
-	std::string hexpayload = (std::string)std::format("{:02x} {:02x} {:02x} {:02x} {:02x} ", action, toggle, number, value, channel);
+	// this breaks when compiled for mac on GitHub...  Apparently its c++20 format is not supported
+	// std::string hexpayload = (std::string)std::format("{:02x} {:02x} {:02x} {:02x} {:02x} ", action, toggle, number, value, channel);
+
+	std::string hexpayload;
+	// build the hex payload for the preset message
+	hexpayload = gigperformer::sdk::GPUtils::intToHex(action) + " " +
+		gigperformer::sdk::GPUtils::intToHex(toggle) + " " +
+		gigperformer::sdk::GPUtils::intToHex(number) + " " +
+		gigperformer::sdk::GPUtils::intToHex(value) + " " +
+		gigperformer::sdk::GPUtils::intToHex(channel) + " ";
+	// scriptLog("PresetPayload: " + hexpayload, 1);
 	return hexpayload;
 }
 
