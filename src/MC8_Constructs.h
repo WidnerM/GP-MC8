@@ -3,7 +3,9 @@
 #define UNIVERSAL_QUERY "F0 7E 7F 06 01 F7"
 #define MFG_ID { 0x00, 0x21, 0x24}
 
-#define MC8PRO_PREFIX "f0 00 21 24 07 00 70 00 00 00 00 00 00 00 00 00"
+#define MCCOLOR_PRESET 23
+
+#define MC8PRO_PREFIX "f0 00 21 24 08 00 70 00 00 00 00 00 00 00 00 00"
 #define MC8PRO_ROWLEN 4
 #define MC8PRO_SHORTLEN 32
 #define MC8PRO_LONGLEN 32
@@ -72,9 +74,9 @@
 
 #define LAYOUT_WIDGETNAME "mcx_layout"
 #define EXTENSION_IDENTIFIER "Morningstar MCx Extension"
-#define MCX_MIDI_IN "MIDIIN2 (Morningstar MC8 Pro)", "MIDIIN2 (Morningstar MC8)", "MIDIIN2 (Morningstar MC6 Pro)", "MIDIIN2 (Morningstar MC6)", "Morningstar MC6 Pro Port 2"
+#define MCX_MIDI_IN "MIDIIN2 (Morningstar MC8 Pro)", "MIDIIN2 (Morningstar MC8)", "MIDIIN2 (Morningstar MC6 Pro)", "MIDIIN2 (Morningstar MC6)", "Morningstar MC6 Pro Port 2", "Morningstar MC8 Pro Port 2"
 #define MIDI_IN_WIDGETNAME "mcx_midiin"
-#define MCX_MIDI_OUT "MIDIOUT2 (Morningstar MC8 Pro)", "MIDIOUT2 (Morningstar MC8)", "MIDIOUT2 (Morningstar MC6 Pro)", "MIDIOUT2 (Morningstar MC6)", "Morningstar MC6 Pro Port 2"
+#define MCX_MIDI_OUT "MIDIOUT2 (Morningstar MC8 Pro)", "MIDIOUT2 (Morningstar MC8)", "MIDIOUT2 (Morningstar MC6 Pro)", "MIDIOUT2 (Morningstar MC6)", "Morningstar MC6 Pro Port 2","Morningstar MC8 Pro Port 2"
 #define MIDI_OUT_WIDGETNAME "mcx_midiout"
 #define MCX_CONFIG_WIDGETNAME "mcx_row_config"
 #define MCX_INITIAL_CONFIG_WIDGETNAME "mcx_initial_row_config"

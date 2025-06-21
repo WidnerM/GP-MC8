@@ -22,8 +22,8 @@
 const std::string XMLProductDescription =   
      // Replace with your information            
     "<Library>" 
-    "<Product Name=\"MC8 Extension\" Version=\"1.0\" BuildDate=\"12/11/2022\"></Product> "
-    "<Description>Control Integration for Morningstar MC8</Description>"
+    "<Product Name=\"MC8 Extension\" Version=\"1.1\" BuildDate=\"6/21/2025\"></Product> "
+    "<Description>Control Integration for Morningstar MC Controllers</Description>"
     "</Library>"; 
 
 
@@ -67,13 +67,14 @@ public:
     // from Display.cpp - functions for displaying things on the MC8 display
     uint8_t calculateMCChecksum(uint16_t len, uint8_t *ptr);
     gigperformer::sdk::GPMidiMessage makeMCHexMessage(std::string hexpayload, uint8_t type, uint8_t op3, uint8_t op4, uint8_t op5, uint8_t op6);
-    gigperformer::sdk::GPMidiMessage makeMCMessage(std::string payload, uint8_t type, uint8_t column, uint8_t op4, uint8_t op5);
+    gigperformer::sdk::GPMidiMessage makeMCMessage(std::string payload, uint8_t type, uint8_t column, uint8_t op4, uint8_t op5, uint8_t op6 = 0);
     gigperformer::sdk::GPMidiMessage makeMCMessage(std::string payload, uint8_t type, uint8_t column);
+    std::string PresetPayload(uint8_t action, uint8_t toggle, uint8_t number, uint8_t value, uint8_t channel);
     void SendTextToMCx(std::string text, uint8_t op2, uint8_t op3, uint8_t op4);
     void PresetShortName(std::string text, uint8_t position);
     void PresetToggleName(std::string text, uint8_t position);
 
-    void UpdatePresetMessage(uint8_t preset, uint8_t msgnum, uint8_t msgtype, uint8_t action, uint8_t toggle, uint8_t savetomem, std::string hexpayload);
+    void UpdatePresetMessage(uint8_t preset, uint8_t msgnum, uint8_t msgtype, uint8_t savetomem, uint8_t action, uint8_t toggle, uint8_t ccnum, uint8_t ccval, uint8_t midichan);
 
     void PresetLongName(std::string text, uint8_t position);
     void CurrentBankName(std::string text);
@@ -303,8 +304,8 @@ public:
                 sprintf(extra, " %0x", data[x]);
                 strcat(str, extra);
             }
-            scriptLog(str, 1);
-            scriptLog(deviceName, 1);
+            scriptLog(str, 0);
+            scriptLog(deviceName, 0);
         }
 
         return (false);
@@ -441,7 +442,7 @@ public:
             widgetlist.insert(widgetlist.end(), globalwidgetlist.begin(), globalwidgetlist.end());
             buildSurfaceModel(widgetlist);
 
-            if (widgetExists(MCX_CONFIG_WIDGETNAME))
+            if (widgetExists(MCX_CONFIG_WIDGETNAME))  // checks for a rackspace specific layout definition
             {
                 widgetlist = ParseWidgetName(getWidgetCaption(MCX_CONFIG_WIDGETNAME), '_');
                 for (row = 0; row < Surface.NumRows; row++)

@@ -10,6 +10,7 @@
 #pragma once
 
 #define MIDI_CC_00              0xB0
+#define NOTE_ON_1				0x90
 #define NOTE_ON_16				0x9f
 #define MCX_BUTTON_BASE 0x00
 #define MCX_BUTTON_MAX 0x3f

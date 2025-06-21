@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <format>
 #include "LibMain.h"
 
 // Calculate the checksum required on all MCx messages
@@ -39,24 +40,34 @@ gigperformer::sdk::GPMidiMessage LibMain::makeMCHexMessage(std::string hexpayloa
     return midimessage;
 }
 
+std::string LibMain::PresetPayload(uint8_t action, uint8_t toggle, uint8_t number, uint8_t value, uint8_t channel)
+{
+	std::string hexpayload = (std::string)std::format("{:02x} {:02x} {:02x} {:02x} {:02x} ", action, toggle, number, value, channel);
+	return hexpayload;
+}
+
 // sends sysex message to MCx to update a "message" sent by that preset when the appropriate action is taken
 // this is intended primarily for changing colors.  We should be able to create a message, then execute that action
 // using the EngagePreset(preset, action) function to execute the color change.
-void LibMain::UpdatePresetMessage(uint8_t preset, uint8_t msgnum, uint8_t msgtype, uint8_t action, uint8_t toggle, uint8_t savetomem, std::string hexpayload)
+void LibMain::UpdatePresetMessage(uint8_t preset, uint8_t msgnum, uint8_t msgtype, uint8_t savetomem, uint8_t action, uint8_t toggle, uint8_t ccnum, uint8_t ccval, uint8_t midichan)
 {
     gigperformer::sdk::GPMidiMessage midimessage;
 
-    midimessage = gigperformer::sdk::GPMidiMessage(Surface.SysexPrefix + (std::string) "00 00" + hexpayload + "00 f7");
+    midimessage = gigperformer::sdk::GPMidiMessage(Surface.SysexPrefix + (std::string) "00 00 00 00 00 00 f7");
 
     midimessage.setValue(OPCODE_2, (uint8_t) PRESETMSG_OP);
     midimessage.setValue(OPCODE_3, (uint8_t) preset);
     midimessage.setValue(OPCODE_4, (uint8_t) msgnum);
     midimessage.setValue(OPCODE_5, (uint8_t) msgtype);
     midimessage.setValue(OPCODE_6, (uint8_t) savetomem);  // op6, 0x7f tells it MC to save it
+
     
     // First two bytes of the payload are always(?) action type and toggle type
     midimessage.setValue(16, action);
     midimessage.setValue(17, toggle);
+    midimessage.setValue(18, ccnum);
+    midimessage.setValue(19, ccval);
+    midimessage.setValue(20, midichan);
 
 
     midimessage.setValue(midimessage.length() - 2,
@@ -68,7 +79,7 @@ void LibMain::UpdatePresetMessage(uint8_t preset, uint8_t msgnum, uint8_t msgtyp
 }
 
 // append a checksum and f7 to a text string payload, then convert to a GPMidiMessage
-gigperformer::sdk::GPMidiMessage LibMain::makeMCMessage(std::string payload, uint8_t type, uint8_t column, uint8_t op4, uint8_t op5)
+gigperformer::sdk::GPMidiMessage LibMain::makeMCMessage(std::string payload, uint8_t type, uint8_t column, uint8_t op4, uint8_t op5, uint8_t op6)
 {
     gigperformer::sdk::GPMidiMessage midimessage;
 
@@ -278,6 +289,7 @@ void LibMain::TogglePreset(uint8_t position, uint8_t value)
     sendMidiMessage(MidiMessage, sizeof(MidiMessage));
 }
 
+// To engage a preset we send a CC with the number being 10 + the preset position and the value being the action type
 void LibMain::EngagePreset(uint8_t position, uint8_t value)
 {
     uint8_t MidiMessage[3];

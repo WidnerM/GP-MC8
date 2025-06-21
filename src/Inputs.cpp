@@ -325,6 +325,6 @@ bool LibMain::IsKnob(const uint8_t* data, int length)  // Is midi event from an 
 
 bool LibMain::IsButton(const uint8_t* data, int length)   // Is midi event from a button?
 {
-    return(data[0] == MIDI_CC_00 && data[1] >= MCX_BUTTON_BASE && data[1] <= MCX_BUTTON_MAX);
+    return((data[0] == MIDI_CC_00 || data[0] == NOTE_ON_1) && data[1] >= MCX_BUTTON_BASE && data[1] <= MCX_BUTTON_MAX);
 }
 
