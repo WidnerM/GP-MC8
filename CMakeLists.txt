@@ -1,9 +1,9 @@
-cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION 3.28)
 
 # language standard
-set(CMAKE_C_STANDARD 17)
-set(CMAKE_C_STANDARD_REQUIRED YES)
-set(CMAKE_C_EXTENSIONS NO)
+# set(CMAKE_C_STANDARD 20)
+# set(CMAKE_C_STANDARD_REQUIRED YES)
+# set(CMAKE_C_EXTENSIONS NO)
 
 # Let's choose a name and version for the extension. Change the name to your
 # liking. The version should be a string like "1.0".
