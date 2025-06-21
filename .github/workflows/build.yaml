@@ -18,7 +18,7 @@ jobs:
             matrix:
                 config:
                     - name: "macOS - universal"
-                      os: "macos-14"
+                      os: "macos-latest"
                       cmake_preset: "mac-universal"
                       build_config: "Release"
                     - name: "Windows"
@@ -51,7 +51,7 @@ jobs:
               if: env.CCACHE_AVAILABLE == 'true'
               run: echo "CMAKE_ADDITIONAL_OPTIONS=${{ env.CMAKE_ADDITIONAL_OPTIONS }} -D CMAKE_C_COMPILER_LAUNCHER=ccache -D CMAKE_CXX_COMPILER_LAUNCHER=ccache" >> $GITHUB_ENV
             - name: "CMake: Configure"
-              run: cmake -S . --preset=${{ matrix.config.cmake_preset }} ${{ env.CMAKE_ADDITIONAL_OPTIONS }}
+              run: cmake -S . --preset=${{ matrix.config.cmake_preset }} ${{ env.CMAKE_ADDITIONAL_OPTIONS }} -DCMAKE_CXX_STANDARD=20
             - name: "CMake: Build"
               run: cmake --build --preset=${{ matrix.config.cmake_preset }} --config ${{ matrix.config.build_config }} --parallel
             - name: "CMake: Install"
