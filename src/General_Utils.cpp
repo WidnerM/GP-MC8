@@ -37,3 +37,18 @@ std::string cleanSysex(std::string subtext)
     return subtext;
 }
 
+
+// convert a hex string (F07A etc.) to bytes string to send as midi data
+// GP SDK will do this with GPMidiMessage(hexstring);
+std::string HexToByteString(const std::string& hex) {
+    std::string bytes;
+
+    size_t len = hex.length();
+    for (size_t i = 0; i < len; i += 2) {
+        if (i + 1 >= len) break; // Ignore incomplete byte
+        unsigned int byte;
+        std::istringstream(hex.substr(i, 2)) >> std::hex >> byte;
+        bytes.push_back(static_cast<char>(byte));
+    }
+    return bytes;
+}

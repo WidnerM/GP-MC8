@@ -47,11 +47,11 @@ std::string LibMain::PresetPayload(uint8_t action, uint8_t toggle, uint8_t numbe
 
 	std::string hexpayload;
 	// build the hex payload for the preset message
-	hexpayload = gigperformer::sdk::GPUtils::intToHex(action) + " " +
-		gigperformer::sdk::GPUtils::intToHex(toggle) + " " +
-		gigperformer::sdk::GPUtils::intToHex(number) + " " +
-		gigperformer::sdk::GPUtils::intToHex(value) + " " +
-		gigperformer::sdk::GPUtils::intToHex(channel) + " ";
+	hexpayload = gigperformer::sdk::GPUtils::intToHex(action) +
+		gigperformer::sdk::GPUtils::intToHex(toggle) +
+		gigperformer::sdk::GPUtils::intToHex(number) +
+		gigperformer::sdk::GPUtils::intToHex(value) +
+		gigperformer::sdk::GPUtils::intToHex(channel);
 	// scriptLog("PresetPayload: " + hexpayload, 1);
 	return hexpayload;
 }
@@ -138,8 +138,9 @@ void LibMain::Notify(std::string text, uint8_t duration)
 // displays short preset name at position
 void LibMain::PresetShortName(std::string text, uint8_t position)
 {
-    std::string cleantext = cleanSysex(text) + (std::string) "                                                ";
-    SendTextToMCx(cleantext.substr(0,Surface.ShortNameLen), SHORTNAME_OP, position, 0x00);
+    // std::string cleantext = cleanSysex(text) + (std::string) "                                                ";
+    // SendTextToMCx(cleantext.substr(0,Surface.ShortNameLen), SHORTNAME_OP, position, 0x00);
+    sendMidiMessage(Surface.PresetShortname(position, text));
 }
 
 void LibMain::PresetToggleName(std::string text, uint8_t position)

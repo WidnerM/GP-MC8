@@ -8,6 +8,7 @@
 #include "MC8_Constructs.h"
 #include "MC8_Colors.h"
 #include "MC8_Buttons.h"
+#include "General_Utils.h"
 
 // Define identifiers GP user must use to name their widgets
 #define THIS_PREFIX "mcx"
@@ -327,6 +328,46 @@ public:
 		}
 
 		return changes_made;
+	}
+
+	gigperformer::sdk::GPMidiMessage PresetShortname(uint8_t position, std::string shortname)
+	{
+		gigperformer::sdk::GPMidiMessage midimessage;
+
+		std::string cleantext = cleanSysex(shortname) + (std::string)"                                                "; // make sure it cover the full length
+		
+		midimessage = gigperformer::sdk::GPMidiMessage::makeSysexMessage(gigperformer::sdk::GPUtils::hex2binaryString(SysexPrefix)
+			+ cleantext.substr(0,ShortNameLen) + gigperformer::sdk::GPUtils::hex2binaryString("00f7")); // append the csum placeholder + sysex end marker f7
+
+		// set opcodes
+		midimessage.setValue((uint8_t) OPCODE_2, (uint8_t) SHORTNAME_OP);
+		midimessage.setValue((uint8_t) OPCODE_3, (uint8_t) position);
+		midimessage.setValue((uint8_t) OPCODE_4, (uint8_t) 0);
+		midimessage.setValue((uint8_t) OPCODE_5, (uint8_t) 0);
+
+		// calculate and place checksum
+		midimessage.setValue(midimessage.length() - 2,
+			(uint8_t)calculateChecksum(midimessage.length(), midimessage.asBytes()));
+		return midimessage;
+
+	}
+
+private:
+	// Calculate the checksum required on all MCx messages
+	uint8_t calculateChecksum(uint16_t len, uint8_t* ptr)
+	{
+		uint8_t cSum = *(ptr);
+		for (int i = 1; i < len - 2; i++)
+		{
+			cSum ^= *(ptr + i);
+		}
+		cSum &= 0x7F;
+		return cSum;
+	}
+
+	uint8_t calculateChecksum(gigperformer::sdk::GPMidiMessage gpmidimessage)
+	{
+		return calculateChecksum(gpmidimessage.length(), gpmidimessage.asBytes());
 	}
 };
 
