@@ -177,6 +177,7 @@ public:
         }
         MidiOut = validOutPorts;
         // scriptLog(foundout ? EXTENSION_IDENTIFIER + (std::string)" using midi out " + MidiOut : EXTENSION_IDENTIFIER + (std::string)"COULD NOT FIND midi out " + MidiOut, 1);
+        if (foundin && foundout) Surface.syncState = 1; else Surface.syncState = 0; // set when both in and out are connected
         return (foundin && foundout);
     }
 
@@ -527,7 +528,17 @@ public:
     // A midi device was added or removed
     void OnMidiDeviceListChanged(std::vector< std::string>& inputs, std::vector< std::string>& outputs) override
     {
-        SetMidiInOutDevices();
+        bool disconnected = Surface.syncState == 0;  // we were not connected heading into this callback
+
+        // if we were not connected and we become connected, initialize and display what's needed,
+        // otherwise we do nothing because it was some other device that connected/disconnected
+        if (SetMidiInOutDevices() && disconnected)  // if we just got connected, initialize the MCx
+        {
+            InitializeMC8();
+
+			Surface.LastRackspace = -1; // force OnRackspaceActivated to do full redisplay
+            OnRackspaceActivated();  // We call this to set everything up for the current Rackspace
+        }
     }
 
 
@@ -537,7 +548,6 @@ public:
         // scriptLog("OnOpen called.", 1);
         Surface.Initialize();
 
-        // Notify("Funk it up, Boy!", 20);
     }
 
     // Called when shutting down
@@ -564,7 +574,6 @@ public:
         // Do any initialization that you need
         // scriptLog("Path to me = " + getPathToMe(), 1);
         Surface.Initialize();
-        Surface.syncState = 1;
         InitializeMC8();
               
         // Register callabacks
