@@ -146,6 +146,9 @@ public:
         std::vector <std::string> validInPorts = {};
         std::vector <std::string> validOutPorts = {};
 
+        if (widgetExists(MIDI_OUT_WIDGETNAME)) { MidiOut = ParseWidgetName(getWidgetCaption(MIDI_OUT_WIDGETNAME), ','); }
+        else MidiOut = { MCX_MIDI_OUT };
+
         for (int i = 0; i < getMidiInDeviceCount(); i++)
         {
             name = getMidiInDeviceName(i);
@@ -205,6 +208,8 @@ public:
             registerCallback("OnSongChanged");
             registerCallback("OnSongPartChanged");
             registerCallback("OnModeChanged");
+            registerCallback("OnMidiDeviceListChanged");
+
             // registerCallback("OnGlobalPlayStateChanged");
 
             registerCallback("OnMidiIn");
@@ -534,11 +539,13 @@ public:
         // otherwise we do nothing because it was some other device that connected/disconnected
         if (SetMidiInOutDevices() && disconnected)  // if we just got connected, initialize the MCx
         {
-            InitializeMC8();
+            scriptLog("MCX: device is now connected", 0);
+            // InitializeMC8();
 
 			Surface.LastRackspace = -1; // force OnRackspaceActivated to do full redisplay
             OnRackspaceActivated();  // We call this to set everything up for the current Rackspace
         }
+		else if (disconnected) { scriptLog("MCX: devicelist changed but still disconnected", 0); }
     }
 
 

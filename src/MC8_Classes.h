@@ -232,8 +232,6 @@ public:
 	bool Color = MC8_COLOR;
 	std::string SysexPrefix = MC8_PREFIX;
 
-	bool RowsLinked = false; // MCx this controls display of 2 rows of four (false), or one group of 8 (true)
-
 	// uint8_t BottomMode = SHOW_BUTTONS;  // What to show along bottom row of display
     // uint8_t TopMode = SHOW_VARS_PARTS; // What to show along top row of display
 
@@ -281,6 +279,13 @@ public:
 		}
 
 		return true;
+	}
+
+	bool rowsLinked(SurfaceRow row)
+	{
+		if (row.WidgetID == BOTTOM_TAG || row.WidgetID == TOP_TAG) return (Row[TOP_ROW].Showing == Row[BOTTOM_ROW].Showing);
+		else if (row.WidgetID == B2_TAG || row.WidgetID == T2_TAG) return (Row[T2_ROW].Showing == Row[BOTTOM_ROW].Showing);
+		else return false;
 	}
 
 	// adds a bank of the indicated type to our surface model

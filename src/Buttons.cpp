@@ -94,7 +94,7 @@ void LibMain::DisplayRacks(SurfaceRow & row, uint8_t firstbutton, uint8_t number
 void LibMain::DisplayVariations(SurfaceRow & row, uint8_t firstbutton, uint8_t number, bool forcetocurrent)
 {
     std::string variationname = "";
-    int x, positionindex, current = 0, count = 1;
+    int x, positionindex, current = 0, count = 1, firstshown = 0;
 
     if (row.Showing == SHOW_RACKS_SONGS)
     {
@@ -125,29 +125,58 @@ void LibMain::DisplayVariations(SurfaceRow & row, uint8_t firstbutton, uint8_t n
 
     // scriptLog("DisplayVariations: count=" + std::to_string(count) + " curret=" + std::to_string(current), 1);
 
+	if (count > 0) count = count - 1; // convert count to max index
+
     if (forcetocurrent == true)
     {
-        x = current % Surface.RowLen; // we're going to show in banks of Surface.RowLen, this is the offset
-        row.FirstShown = current - x;
+        if (Surface.rowsLinked(row)) // if both rows are showing the same thing, show 8 in a row
+        {
+            firstshown = current - (current % (Surface.RowLen * 2));
+            if (row.WidgetID == TOP_TAG || row.WidgetID == T2_TAG)
+            {
+                row.FirstShown = firstshown;
+            }
+            else
+            {
+                row.FirstShown = firstshown + Surface.RowLen;
+			}
+        }
+        else
+			row.FirstShown = current - (current % Surface.RowLen);
+
     }
-    if (row.WidgetID == BOTTOM_TAG && row.Showing == Surface.Row[TOP_ROW].Showing)  // if we're on BOTTOM_ROW and showing same as TOP_ROW
+    if (Surface.rowsLinked(row))
     {
-        row.FirstShown = Surface.Row[TOP_ROW].FirstShown + Surface.RowLen; // then set our first shown to the next Rack/Song/Songpart/Variation
-    }
-    else if (row.WidgetID == B2_TAG && row.Showing == Surface.Row[T2_ROW].Showing)  // if we're on BOTTOM_ROW and showing same as TOP_ROW
-    {
-        row.FirstShown = Surface.Row[T2_ROW].FirstShown + Surface.RowLen; // then set our first shown to the next Rack/Song/Songpart/Variation
+        if (row.WidgetID == BOTTOM_TAG)  // if we're on BOTTOM_ROW and showing same as TOP_ROW
+        {
+            row.FirstShown = Surface.Row[TOP_ROW].FirstShown + Surface.RowLen; // then set our first shown to the next Rack/Song/Songpart/Variation
+        }
+        else if (row.WidgetID == B2_TAG)  // if we're on BOTTOM_ROW and showing same as TOP_ROW
+        {
+            row.FirstShown = Surface.Row[T2_ROW].FirstShown + Surface.RowLen; // then set our first shown to the next Rack/Song/Songpart/Variation
+        }
+        else if (row.WidgetID == TOP_TAG || row.WidgetID == T2_TAG) // if we're on a TOP_ROW and showing same as BOTTOM_ROW
+        {
+            if ((row.FirstShown + 2 * Surface.RowLen) >= count) // set to the last page of racks/variations/sons/songparts
+            {
+                row.FirstShown = count - (count % (Surface.RowLen * 2));
+            }
+            else if (row.FirstShown < 0)
+            {
+                row.FirstShown = 0;
+			}
+        }
     }
     else
     {
         if (row.FirstShown >= count)
         {
             // row.FirstShown -= Surface.RowLen;
-            // row.FirstShown = count - count % Surface.RowLen;
+            row.FirstShown = count - count % Surface.RowLen;
             // row.FirstShown = 0;
-            row.FirstShown = row.FirstShown - Surface.RowLen;
+            // row.FirstShown = row.FirstShown - Surface.RowLen;
         }
-        if (row.FirstShown >= count) row.FirstShown = row.FirstShown - Surface.RowLen; // twice if in double rows
+        // if (row.FirstShown >= count) row.FirstShown = row.FirstShown - Surface.RowLen; // twice if in double rows
         if (row.FirstShown < 0)
         {
             row.FirstShown = 0;
@@ -159,7 +188,7 @@ void LibMain::DisplayVariations(SurfaceRow & row, uint8_t firstbutton, uint8_t n
     for (x = firstbutton; x < firstbutton + number; x++)
     {
 
-        if (positionindex >= count) // clear the text if there's no song this high
+        if (positionindex > count) // clear the text if there's no song this high
         {
             PresetShortName("", row.FirstID + x);
             TogglePreset(row.FirstID + x, 0); // turn toggle off

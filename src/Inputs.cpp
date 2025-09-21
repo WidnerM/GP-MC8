@@ -17,6 +17,8 @@ void LibMain::ProcessButton(uint8_t button, uint8_t value)  // processes a midi 
         // which actual row (page really) to apply them to.
         // each row can display buttons, songs/racks, or variations/songparts, which the "row select" botton will cycle between
 
+        // I really need to completely re-do this to make it more flexible and behavior not not so "encoded" into different bits
+
         uint8_t thisposition = button & 0x03;
         uint8_t thisrow = (button >> 2) & 0x03;
         uint8_t thisaction = (button >> 4) & 0x03;
@@ -75,11 +77,11 @@ void LibMain::ProcessButton(uint8_t button, uint8_t value)  // processes a midi 
                     break;
                 case SHOW_VARS_PARTS:
                 case SHOW_RACKS_SONGS:
-                    if (Surface.Row[thisrow].Showing == Surface.Row[otherrow].Showing)
+                    if (Surface.Row[thisrow].Showing == Surface.Row[otherrow].Showing) // if showing the same thing...
                     {
-                        Surface.Row[std::max(thisrow, otherrow)].FirstShown -= 2 * Surface.RowLen;
-                        DisplayVariations(Surface.Row[std::max(thisrow, otherrow)], 0, Surface.RowLen, false);
-                        DisplayVariations(Surface.Row[std::min(thisrow, otherrow)], 0, Surface.RowLen, false);
+						Surface.Row[std::max(thisrow, otherrow)].FirstShown -= 2 * Surface.RowLen; // decrement first shown by 2x rowlen
+                        DisplayVariations(Surface.Row[std::max(thisrow, otherrow)], 0, Surface.RowLen, false);  // show top row
+                        DisplayVariations(Surface.Row[std::min(thisrow, otherrow)], 0, Surface.RowLen, false);  // show bottom row
                     }
                     else
                     {
@@ -113,7 +115,7 @@ void LibMain::ProcessButton(uint8_t button, uint8_t value)  // processes a midi 
                     break;
                 }
                 break;
-            case MCX_ACTION_SELECT:
+			case MCX_ACTION_SELECT:  // cycle through Buttons, Racks/Songs, Variations/Parts
                 switch (Surface.Row[thisrow].Showing)
                 {
                 case SHOW_BUTTONS:
@@ -123,7 +125,7 @@ void LibMain::ProcessButton(uint8_t button, uint8_t value)  // processes a midi 
                         // scriptLog("Going buttons to racks, otherrow = " + std::to_string(otherrow), 1);
                         Surface.Row[otherrow].Showing = SHOW_RACKS_SONGS;
                         DisplayVariations(Surface.Row[std::max(thisrow, otherrow)], 0, Surface.RowLen, true);
-                        DisplayVariations(Surface.Row[std::min(thisrow, otherrow)], 0, Surface.RowLen, false);
+                        DisplayVariations(Surface.Row[std::min(thisrow, otherrow)], 0, Surface.RowLen, true);
                     }
                     else DisplayVariations(Surface.Row[thisrow], 0, Surface.RowLen, true);
                     break;
@@ -134,7 +136,7 @@ void LibMain::ProcessButton(uint8_t button, uint8_t value)  // processes a midi 
                         // scriptLog("Going to Racks to variations, otherrow = " + std::to_string(otherrow), 1);
                         Surface.Row[otherrow].Showing = SHOW_VARS_PARTS;
                         DisplayVariations(Surface.Row[std::max(thisrow, otherrow)], 0, Surface.RowLen, true);
-                        DisplayVariations(Surface.Row[std::min(thisrow, otherrow)], 0, Surface.RowLen, false);
+                        DisplayVariations(Surface.Row[std::min(thisrow, otherrow)], 0, Surface.RowLen, true);
                     }
                     else DisplayVariations(Surface.Row[thisrow], 0, Surface.RowLen, true);
                     break;
@@ -154,7 +156,7 @@ void LibMain::ProcessButton(uint8_t button, uint8_t value)  // processes a midi 
                         Surface.Row[thisrow].Showing = SHOW_BUTTONS;
                         DisplayRow(Surface.Row[thisrow]);
                     }
-                    else
+                    else // if there's no widgets to show, switch to Racks/Songs
                     {
                         Surface.Row[thisrow].Showing = SHOW_RACKS_SONGS;
                         if (doublesync || Surface.Row[otherrow].Showing == SHOW_RACKS_SONGS)
