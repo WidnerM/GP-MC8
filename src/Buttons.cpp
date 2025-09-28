@@ -33,7 +33,8 @@ void LibMain::DisplayButtons(SurfaceRow row, uint8_t firstbutton, uint8_t number
             widget = PopulateWidget(widgetname);
             if (widget.IsSurfaceItemWidget)
             {
-                DisplayWidgetValue(row, widget);       
+                DisplayWidgetValue(row, widget);
+                sendMidiMessage(Surface.MakeColorMessage(row.FirstID + x, widget.Colors));
             }
             else  // we end up here if the widget doesn't exist.
             {
@@ -187,6 +188,25 @@ void LibMain::DisplayVariations(SurfaceRow & row, uint8_t firstbutton, uint8_t n
 
     for (x = firstbutton; x < firstbutton + number; x++)
     {
+        if (Surface.Color)
+        {
+            if (row.Showing == SHOW_RACKS_SONGS)
+            {
+                if (inSetlistMode()) sendMidiMessage(Surface.MakeColorMessage(row.FirstID + x, Surface.SongColors));
+                else sendMidiMessage(Surface.MakeColorMessage(row.FirstID + x, Surface.RackColors));
+            }
+            if (row.Showing == SHOW_VARS_PARTS)
+            {
+                if (inSetlistMode()) sendMidiMessage(Surface.MakeColorMessage(row.FirstID + x, Surface.SongpartColors));
+                else sendMidiMessage(Surface.MakeColorMessage(row.FirstID + x, Surface.VariationColors));
+            }
+            if (row.Showing == SHOW_BUTTONS)  // should never actually be in this function when SHOW_BUTTONS is set
+            {
+                sendMidiMessage(Surface.MakeColorMessage(row.FirstID + x, Surface.WidgetColors));
+            }
+
+        }
+        
 
         if (positionindex > count) // clear the text if there's no song this high
         {
@@ -212,29 +232,6 @@ void LibMain::DisplayVariations(SurfaceRow & row, uint8_t firstbutton, uint8_t n
     }
 }
 
-// Returns the color to make a widget based on the widget's GetWidgetValue() and any parameters set for the widget on related "_p" widgets
-/*  int LibMain::getWidgetRGBColor(std::string widgetname, double value)
-{
-    int LitColor = 0xA0A0A0, DimColor = 0x202020;
-    std::string Caption, Extras, Label;
-
-    // check for an extra properties widget on widgetname_P (e.g., sl_b_1_1_p) 
-    if (widgetExists(widgetname + "_p"))
-    {
-        LitColor = getWidgetFillColor(widgetname + "_p");
-        DimColor = getWidgetOutlineColor(widgetname + "_p");
-    }
-
-    if (value != (double)0.0) return LitColor;
-    else return DimColor;
-} */
-
-// Returns the color to make a widget based on the widget's GetWidgetValue() and any parameters set for the widget on related "_p" widgets
-/* int LibMain::getWidgetRGBColor(SurfaceWidget widget, double value)
-{
-    if (value != (double)0.0) return widget.RgbLitColor;
-    else return widget.RgbDimColor;
-} */
 
 // This extension expects widget names generally in the format "DevicePrefix_WidgetType_Bank_Column" where the "_" character is used as a delimiter.
 // An example widget would be "sl_k_1_0" referring to SLMK3 knob bank 1 column 0.
@@ -316,6 +313,7 @@ SurfaceWidget LibMain::PopulateWidget(std::string widgetname)
                     // look for extra parameters on a parameter widget if it's a valid surface item widget
                     if (widget.Validated)
                     {
+                        widget.Colors = Surface.WidgetColors; // set to default widget colors
 
                         // if there is a _[x]p_ widget that takes first priority, e.g. mcx_bp_bank_0
                         // we use this for preset ShortNameOn, ShortNameOff, and LongName
@@ -336,46 +334,36 @@ SurfaceWidget LibMain::PopulateWidget(std::string widgetname)
                             else
                                 widget.LongName = name_segments[0];
 
+
                             widget.Caption = getWidgetCaption(pwidgetname); // need to stop using this for mcx
-                            widget.RgbLitColor = getWidgetFillColor(pwidgetname); // these will be nice when the Pro series arrives
-                            widget.RgbDimColor = getWidgetOutlineColor(pwidgetname);
+                             
                         }
                         else
                         {
                             // in the absense of an widget specific property widget we'll set short and long names by the caption
                             widget.ShortNameOff = widget.Caption;
-                            widget.ShortNameOn = (std::string) "*" + widget.Caption;
+                            widget.ShortNameOn = (std::string)"*" + widget.Caption;
                             widget.LongName = widget.Caption;
-
-                            // this searches for a bank _p widget that we use for color.  no purpose now, but for the MCx Pro?
-                            // I'm just keeping this code around now for the Pro so we can pick up a generic color set for a bank
-                            pwidgetname = widget.SurfacePrefix + "_" + widget.WidgetID + "_" + widget.BankID + "_p";
-                            if (widgetExists(pwidgetname))
-                            {
-                                // widget.Caption = getWidgetCaption(pwidgetname);
-                                widget.RgbLitColor = getWidgetFillColor(pwidgetname);
-                                widget.RgbDimColor = getWidgetOutlineColor(pwidgetname);
-                            }
-                            else
-                            {
-                                // if no individual or bank property widget exists we'll try the bank indicator widget
-                                pwidgetname = widget.SurfacePrefix + "_" + widget.WidgetID + "_" + widget.BankID + "_i";
-                                if (widgetExists(pwidgetname))
-                                {
-                                    // widget.Caption = getWidgetCaption(pwidgetname);
-                                    widget.RgbLitColor = getWidgetFillColor(pwidgetname);
-                                    widget.RgbDimColor = getWidgetOutlineColor(pwidgetname);
-                                }
-                                else
-                                {
-                                    // if none of them exist we'll use an orange-ish color
-                                    widget.RgbLitColor = 0xff0000;
-                                    widget.RgbDimColor = 0x500000;
-                                }
-                            }
-                            // widget.BarColor = widget.LitColor;
-                            // widget.KnobColor = widget.LitColor;
                         }
+
+                        // this searches for a color widget
+                        pwidgetname = widget.SurfacePrefix + "_" + widget.WidgetID + "c_" + widget.BankID + "_" + control_number;
+                        if (widgetExists(pwidgetname))
+                        {
+                            name_segments = ParseWidgetName(getWidgetCaption(pwidgetname), '_');
+
+                            if (name_segments.size() >= 6)
+                            {
+                                widget.Colors.LedColor[0] = std::stoi("0" + name_segments[0]);
+                                widget.Colors.TextColor[0] = std::stoi("0" + name_segments[1]);
+                                widget.Colors.BackgroundColor[0] = std::stoi("0" + name_segments[2]);
+
+                                widget.Colors.LedColor[1] = std::stoi("0" + name_segments[3]);
+                                widget.Colors.TextColor[1] = std::stoi("0" + name_segments[4]);
+                                widget.Colors.BackgroundColor[1] = std::stoi("0" + name_segments[5]);
+                            }
+                        }
+
                     }
                 }
             }

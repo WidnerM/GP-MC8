@@ -10,6 +10,11 @@
 #define MC8PRO_SHORTLEN 32
 #define MC8PRO_LONGLEN 32
 #define MC8PRO_COLOR true
+#define MC8PRO_COLORCHANGE "f0 00 21 24 08 00 70 05 00 00 00 00 00 00 00 00 55 55 55 55 01 02 03 04 05 06 07 08 09"
+#define MC8_COLOR_PAYLOAD "55 55 55 55 01 02 03 04 05 06 07 08 09" // last nine are 3 LED colors, 3 text colors, 3 background colors
+#define MC8_POS_COLOR_LEDS 20
+#define MC8_POS_COLOR_TEXT 23
+#define MC8_POS_COLOR_BACK 26
 
 #define MC8_PREFIX "f0 00 21 24 04 00 70 00 00 00 00 00 00 00 00 00"
 #define MC8_ROWLEN 4
@@ -30,6 +35,7 @@
 #define MC6_LONGLEN 24
 #define MC6_COLOR false
 
+#define MC8_COLOR_ARRAY { 0xcd5c5c, 0xfa8072, 0xff0000, 0xb22222, 0x8b0000, 0xffb6c1, 0xff69b4, 0xff1493, 0xdb7093, 0xffa07a, 0xff6347, 0xff4500, 0xff8c00, 0xffa500, 0xffd700, 0xffff00, 0xffffe0, 0xf0e68c, 0xbdb76b, 0xe6e6fa, 0xd8bfd8, 0xda70d6, 0x663399, 0x8a2be2, 0x800080, 0x4b0082, 0x7b68ee, 0x00ff00, 0x228b22, 0x6400, 0x6b8e23, 0x808000, 0x8fbc8f, 0x8080, 0x0000ff, 0x00ffff, 0x40e0d0, 0x5f9ea0, 0x4682b4, 0xb0c4de, 0x87ceeb, 0xfff8dc, 0xd2b48c, 0xa52a2a, 0x800000, 0xd3d3d3, 0x808080, 0x708090, 0xffffff, 0x0 }
 
 // #define MC8_SYSEX     { 0xf0, 0x00, 0x21, 0x24, 0x04, 0x00, 0x70, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }
 #define OPCODE_1 6
@@ -80,6 +86,21 @@
 #define MIDI_OUT_WIDGETNAME "mcx_midiout"
 #define MCX_CONFIG_WIDGETNAME "mcx_row_config"
 #define MCX_INITIAL_CONFIG_WIDGETNAME "mcx_initial_row_config"
+#define MCX_COLOR_RACKSPACE_SELECTED "mcx_color_rackspace_selected"
+#define MCX_COLOR_RACKSPACE_UNSELECTED "mcx_color_rackspace_unselected"
+#define MCX_COLOR_VARIATION_SELECTED "mcx_color_variation_selected"
+#define MCX_COLOR_VARIATION_UNSELECTED "mcx_color_variation_unselected"
+#define MCX_COLOR_SONG_SELECTED "mcx_color_song_selected"
+#define MCX_COLOR_SONG_UNSELECTED "mcx_color_song_unselected"
+#define MCX_COLOR_SONGPART_SELECTED "mcx_color_songpart_selected"
+#define MCX_COLOR_SONGPART_UNSELECTED "mcx_color_songpart_unselected"
+#define MCX_COLOR_WIDGET_SELECTED "mcx_color_widget_selected"
+#define MCX_COLOR_WIDGET_UNSELECTED "mcx_color_widget_unselected"
+
+#define MCX_DEFAULT_BACKGROUND 0
+#define MCX_DEFAULT_LED 0xffffff
+#define MCX_DEFAULT_TEXT 0xffffff
+
 
 #define KNOB "k"
 #define FADER "f"
@@ -138,3 +159,5 @@
 #define FADER_VIEW_MODE		4 // display faders in center of main panels
 
 #define FADER_MODE 6 // diplay racks and variations on the bottom bar
+
+

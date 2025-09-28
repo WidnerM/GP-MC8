@@ -3,6 +3,7 @@
 #include "gigperformer/sdk/GPMidiMessages.h"
 #include "gigperformer/sdk/GPUtils.h"
 #include "gigperformer/sdk/GigPerformerAPI.h"
+#include "gigperformer/sdk/GigPerformerFunctions.h"
 #include "gigperformer/sdk/types.h"
 
 #include "MC8_Constructs.h"
@@ -69,6 +70,43 @@
 #define SONGLIST_UP MKIII_TRACK_LEFT
 #define SONGLIST_DOWN MKIII_TRACK_RIGHT
 
+class MC8Color
+{
+public:
+	uint8_t LedColor[3] = { 0,0,0 };
+	uint8_t TextColor[3] = { 0,0,0 };
+	uint8_t BackgroundColor[3] = { 0,0,0 };
+	
+	int rgbDistanceSquared(int x, int y) {
+		if (x == y) return 0;    // if you expect a lot of identical RGB values
+		int r = ((x & 0xFF0000) - (y & 0xFF0000)) >> 16;
+		int g = ((x & 0x00FF00) - (y & 0x00FF00)) >> 8;
+		int b = (x & 0x0000FF) - (y & 0x0000FF);
+		return r * r + g * g + b * b;
+	}
+
+	// return the index of the closest color in the colors array to the requested color
+	uint8_t closest_index (int color)
+	{
+		int colors[] = MC8_COLOR_ARRAY;
+
+		int index, bestindex = 0;
+		int bestdiff = 0xFFFFFF, thisdiff;
+		for (index = 0; index < sizeof(colors) / sizeof(colors[0]); index++)
+		{
+			thisdiff = rgbDistanceSquared(color, colors[index]);
+			if (thisdiff < bestdiff)
+			{
+				bestdiff = thisdiff;
+				bestindex = index;
+			}
+		}
+		if (color < 0x80000000) bestindex += 64;
+		return bestindex;
+	}
+
+};
+
 // The SurfaceWidget class is the conduit used for translating GP widget information and changes to control surface display controller_widgettype_bankname_position
 // These are always temporary.  We do not store the state of widgets or control surface items in the extension.
 // These are created temporarily when GP tells us a widget changed, or we switch to a new rackspace and need to read widgets to update the control surface
@@ -96,7 +134,7 @@ public:
     std::string ShortNameOff = "";
     std::string LongName = "";
 
-	int RgbLitColor = 0, RgbDimColor = 0;
+	MC8Color Colors;
 
 	int resolution = 1000;
 
@@ -224,29 +262,21 @@ public:
 class SurfaceClass
 {
 public:
-	SurfaceRow Row[8]; // We define the control rows as bottom and top of display, plus a button row for each of the four possible externals
+	SurfaceRow Row[8]; // We define the control rows as bottom and top of display of page 1 and 2, then 4 rows of knobs/encoders
 	uint8_t NumRows = 8;
 	uint8_t RowLen = MC8_ROWLEN; // mc8 = 4, mc6 pro = 3
 	uint8_t ShortNameLen = MC8_SHORTLEN; // mc8 = 10, mc6 pro = 32
 	uint8_t LongNameLen = MC8_LONGLEN;  // mc8 = 24, mc6 pro = 32
 	bool Color = MC8_COLOR;
 	std::string SysexPrefix = MC8_PREFIX;
+	MC8Color RackColors, VariationColors, WidgetColors, SongColors, SongpartColors;
 
-	// uint8_t BottomMode = SHOW_BUTTONS;  // What to show along bottom row of display
-    // uint8_t TopMode = SHOW_VARS_PARTS; // What to show along top row of display
-
-	// uint8_t DisplayLayout = KNOB_LAYOUT; // Not sure if we're going to use this at all 
-	// uint8_t SideMode = SHOW_BUTTONS;
 	uint8_t Page = 0;
 
-	// FirstShown[x] is used to remember what number is the first shown on the display if we're paging through songs/parts/racks/variations
-	// if both Bottom and Top row are displaying the same thing we'll display 8 consecutive rather than different starts for each row
-	// uint8_t FirstShown[BOTTOM_MODES] = { 0, 0, 0, 0, 0 };
-	// uint8_t BottomColor[BOTTOM_MODES] = { SLMKIII_ORANGE, SLMKIII_BLUE, SLMKIII_PURPLE, SLMKIII_MINT, SLMKIII_GREEN };
-	// uint8_t BottomHalfColor[BOTTOM_MODES] = { SLMKIII_ORANGE_HALF, SLMKIII_BLUE_HALF, SLMKIII_PURPLE_HALF, SLMKIII_MINT_HALF, SLMKIII_GREEN_HALF };
-
 	int LastRackspace = -1;
-	int syncState = 0;  // is our current model in sync with the device.  semi-deprecated
+	int syncState = 0;  // are our midi in and out connected to the device
+	std::string InputDevice = "";
+	std::string OutputDevice = "";
 
 	// Initialize the surface class as required - specific to a particular control surface
 	bool Initialize()
@@ -354,8 +384,36 @@ public:
 		midimessage.setValue(midimessage.length() - 2,
 			(uint8_t)calculateChecksum(midimessage.length(), midimessage.asBytes()));
 		return midimessage;
-
 	}
+
+	gigperformer::sdk::GPMidiMessage MakeColorMessage(uint8_t position, MC8Color colors)
+	{
+		gigperformer::sdk::GPMidiMessage message;
+
+		// build 16 byte MC prefix + payload + append the 00 f7 into a GPMidiMessage
+		message = gigperformer::sdk::GPMidiMessage(SysexPrefix + MC8_COLOR_PAYLOAD + "00 f7");
+		// scriptLog(textmessage, 1);
+
+		// set opcodes
+		message.setValue(OPCODE_2, (uint8_t) 5);
+		message.setValue(OPCODE_3, position);
+		message.setValue(OPCODE_4, (uint8_t) 0);
+		message.setValue(OPCODE_5, (uint8_t) 0);
+		message.setValue(OPCODE_6, (uint8_t) 0);  // op6, 0x7f tells it MC to save it
+
+		for (int i = 0; i < 3; i++)
+		{
+			message.setValue(MC8_POS_COLOR_LEDS + i, colors.LedColor[i]);
+			message.setValue(MC8_POS_COLOR_TEXT + i, colors.TextColor[i]);
+			message.setValue(MC8_POS_COLOR_BACK + i, colors.BackgroundColor[i]);
+		}
+
+		// calculate and place checksum
+		message.setValue(message.length() - 2,
+			(uint8_t)calculateChecksum(message.length(), message.asBytes()));
+		return message;
+	}
+
 
 private:
 	// Calculate the checksum required on all MCx messages

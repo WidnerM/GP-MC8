@@ -22,6 +22,8 @@ FetchContent_Declare(
   # GIT_TAG 897b3452b99f2d7fc02502d0c90d89cd54b51c7e
   # GIT_TAG 26bc1ed2568b94e1c95ca2348f03afcbb0d8fb16 # 4.7 release
   GIT_TAG 756ecd249f1ff00f3d3a5955769408f74c9fa453 # SDK 60
+  # GIT_REPOSITORY https://github.com/WidnerM/gp-sdk.git
+  # GIT_TAG 1e62325f8ec5b36a94f3cfe0b5395f325e149479
 
 )
 FetchContent_MakeAvailable(gp-sdk)

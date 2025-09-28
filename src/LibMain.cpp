@@ -38,7 +38,7 @@ std::string  LibMain::GetPanelXML(int index)
 
 
 // List of menu items
-std::vector<std::string> menuNames = { "MC8 Device", "MC6 Device", "MC6 Pro Device", "Preset 23", "Send update test"};
+std::vector<std::string> menuNames = { "Reset MC midi ports" };
 
 
 int LibMain::GetMenuCount()
@@ -66,7 +66,12 @@ void LibMain::InvokeMenu(int index)
         switch (index)
         {
         case 0:
-            SetSurfaceLayout("mc8");
+			SetMidiInOutDevices();
+			Surface.Initialize();
+			OnStatusChanged(GPStatus_GigFinishedLoading);
+            Surface.syncState = 1;
+			Surface.LastRackspace = -1; // force a re-initialization of the surface
+			OnRackspaceActivated();
             break;
         case 1:
             SetSurfaceLayout("mc6");
@@ -78,7 +83,8 @@ void LibMain::InvokeMenu(int index)
             EngagePreset(32, 1);
             break;
         case 4:
-            UpdatePresetMessage(0, 10, 3, PRESET_SAVE, ACTION_LONGDOUBLETAP, TOGGLE_TYPE_BOTH, 0x22, 0x33, 0); // doesn't work, but should be the PresetMessage for setting a color
+            // UpdatePresetMessage(0, 10, 3, PRESET_SAVE, ACTION_LONGDOUBLETAP, TOGGLE_TYPE_BOTH, 0x22, 0x33, 0); // doesn't work, but should be the PresetMessage for setting a color
+            sendMidiMessage(makeMCHexMessage("55 55 55 55 01 02 03 04 05 06 07 08 09", 5, 0,0,0,0));
             break;
         case 5:
             OnStatusChanged(GPStatus_GigFinishedLoading);

@@ -13,6 +13,7 @@
 #include <cstdio>
 #include <iostream>
 #include <string>
+#include <regex>
 
 #include "MC8_Classes.h"
 #include "General_Utils.h"
@@ -108,6 +109,7 @@ public:
 
     void DisplayRefresh(bool forcetocurrent = 0);
     void ClearDisplayRow(SurfaceRow row);
+    MC8Color PopulateColors(std::string offwidget, std::string onwidget, std::string shiftwidget);
 
 
     // from Inputs.cpp
@@ -140,41 +142,73 @@ public:
     }
 
 
-    bool SetMidiInOutDevices() {
+    bool SetMidiInOutDevices(std::vector< std::string> inputs = {}, std::vector< std::string> outputs = {}) {
         bool foundin = false, foundout = false;
         std::string name;
         std::vector <std::string> validInPorts = {};
         std::vector <std::string> validOutPorts = {};
 
-        if (widgetExists(MIDI_OUT_WIDGETNAME)) { MidiOut = ParseWidgetName(getWidgetCaption(MIDI_OUT_WIDGETNAME), ','); }
-        else MidiOut = { MCX_MIDI_OUT };
-
         for (int i = 0; i < getMidiInDeviceCount(); i++)
         {
             name = getMidiInDeviceName(i);
             for (int j = 0; j < MidiIn.size(); j++) {
-                if (name == MidiIn[j]) {
-                    listenForMidi(getMidiInDeviceName(i), 1);
-                    foundin = true;
-                    validInPorts.push_back(name);
-                    scriptLog("MCX:  Using midi in " + name, 0);
+                try
+                {
+                    if (std::regex_match(name, std::regex(MidiIn[j])) || name == MidiIn[j]) {
+                        listenForMidi(getMidiInDeviceName(i), 1);
+                        foundin = true;
+                        validInPorts.push_back(name);
+                        scriptLog("MCX:  Using midi in " + name, 0);
+						Surface.InputDevice = name;
+                    }
+                    else scriptLog("MCX: " + name + " does not match " + MidiIn[j], 0);
+                }
+                catch (std::regex_error& e)
+                {
+                    scriptLog("MCX:  Regex error in " + MidiIn[j] + " : " + e.what(), 1);
+
+                    if (name == MidiIn[j]) {
+                        listenForMidi(getMidiInDeviceName(i), 1);
+                        foundin = true;
+                        validInPorts.push_back(name);
+						Surface.InputDevice = name;
+                        scriptLog("MCX:  Using midi in " + name, 0);
+                    }
                 }
             }
         }
-
         for (int i = 0; i < getMidiOutDeviceCount(); i++)
         {
             name = getMidiOutDeviceName(i);
-            // scriptLog("Evaluating midi out " + name, 1);
             for (int j = 0; j < MidiOut.size(); j++) {
-                if (name == MidiOut[j]) {
-                    foundout = true;
-                    if (name.find("MC8 Pro)") != std::string::npos) { SetSurfaceLayout("mc8 pro"); }
-                    else if (name.find("MC8)") != std::string::npos) { SetSurfaceLayout("mc8"); }
-                    else if (name.find("MC6 Pro)") != std::string::npos) { SetSurfaceLayout("mc6 pro"); }
-                    else if (name.find("MC6)") != std::string::npos) { SetSurfaceLayout("mc6"); }
-                    validOutPorts.push_back(name);
-                    scriptLog("MCX:  Using midi out " + name, 0);
+                try
+                {
+                    if (std::regex_match(name, std::regex(MidiOut[j])) || name == MidiOut[j])
+                    {
+                        foundout = true;
+                        if (name.find("MC8 Pro") != std::string::npos) { SetSurfaceLayout("mc8 pro"); }
+                        else if (name.find("MC8") != std::string::npos) { SetSurfaceLayout("mc8"); }
+                        else if (name.find("MC6 Pro") != std::string::npos) { SetSurfaceLayout("mc6 pro"); }
+                        else if (name.find("MC6") != std::string::npos) { SetSurfaceLayout("mc6"); }
+                        validOutPorts.push_back(name);
+                        Surface.OutputDevice = name;
+                        scriptLog("MCX:  Using midi out " + name, 0);
+                    }
+                    else scriptLog("MCX: " + name + " does not match " + MidiOut[j], 0);
+                }
+                catch (std::regex_error& e)
+                {
+                    scriptLog("MCX:  Regex error in " + MidiOut[j] + " : " + e.what(), 1);
+                    if (name == MidiOut[j]) {
+                        foundout = true;
+                        if (name.find("MC8 Pro") != std::string::npos) { SetSurfaceLayout("mc8 pro"); }
+                        else if (name.find("MC8") != std::string::npos) { SetSurfaceLayout("mc8"); }
+                        else if (name.find("MC6 Pro") != std::string::npos) { SetSurfaceLayout("mc6 pro"); }
+                        else if (name.find("MC6") != std::string::npos) { SetSurfaceLayout("mc6"); }
+                        validOutPorts.push_back(name);
+                        Surface.OutputDevice = name;
+                        scriptLog("MCX:  Using midi out " + name, 0);
+                    }
                 }
             }
         }
@@ -333,8 +367,6 @@ public:
         if (mode == 1)
         {
             // scriptLog("Entered setlist mode.", 1);
-            // SetButtonColor(MKIII_CLEAR, Surface.BottomColor[SHOW_RACKSPACES]);
-            // Surface.BottomMode = SHOW_SONGS;
             if (Surface.Color) EngagePreset(33, 2); // screen background color is triggerd on preset 33
             CurrentBankName(getSongName(getCurrentSongIndex()));
             LongPresetNames(getSongpartName(getCurrentSongIndex(), getCurrentSongpartIndex()));
@@ -343,8 +375,6 @@ public:
         else
         {
             // scriptLog("Entered rackspace mode.", 1);
-            // SetButtonColor(MKIII_CLEAR, Surface.BottomColor[SHOW_SONGS]);
-            // Surface.BottomMode = SHOW_RACKSPACES;
             if (Surface.Color) EngagePreset(33, 1);
             CurrentBankName(getRackspaceName(getCurrentRackspaceIndex()));
             LongPresetNames(getVariationName(getCurrentRackspaceIndex(), getCurrentVariationIndex()));
@@ -463,6 +493,15 @@ public:
                 }
             }
 
+            if (Surface.Color)
+            {
+                Surface.RackColors = PopulateColors(MCX_COLOR_RACKSPACE_UNSELECTED, MCX_COLOR_RACKSPACE_SELECTED, MCX_COLOR_RACKSPACE_SELECTED);
+                Surface.VariationColors = PopulateColors(MCX_COLOR_VARIATION_UNSELECTED, MCX_COLOR_VARIATION_SELECTED, MCX_COLOR_VARIATION_SELECTED);
+                Surface.SongColors = PopulateColors(MCX_COLOR_SONG_UNSELECTED, MCX_COLOR_SONG_SELECTED, MCX_COLOR_SONG_SELECTED);
+                Surface.SongpartColors = PopulateColors(MCX_COLOR_SONGPART_UNSELECTED, MCX_COLOR_SONGPART_SELECTED, MCX_COLOR_SONGPART_SELECTED);
+                Surface.WidgetColors = PopulateColors(MCX_COLOR_WIDGET_UNSELECTED, MCX_COLOR_WIDGET_SELECTED, MCX_COLOR_WIDGET_SELECTED);
+            }
+
             // scriptLog("SL identified " + std::to_string(Surface.Row[KNOB_ROW].BankIDs.size()) + " knob banks", 1);
             // scriptLog("SL identified " + std::to_string(Surface.Row[BUTTON_ROW].BankIDs.size()) + " button banks", 1);
 
@@ -535,9 +574,18 @@ public:
     {
         bool disconnected = Surface.syncState == 0;  // we were not connected heading into this callback
 
+		for (auto x = 0; x < outputs.size(); x++) {
+            scriptLog("MCX:  Midi out found " + outputs[x], 0); 
+			if (outputs[x] == Surface.OutputDevice) { scriptLog("MCX:  Connected to " + outputs[x], 0); }
+        }
+		for (auto x = 0; x < inputs.size(); x++)
+        {
+            scriptLog("MCX:  Midi in found " + inputs[x], 0);
+			if (inputs[x] == Surface.InputDevice) { scriptLog("MCX:  Connected to " + inputs[x], 0); }
+        }
         // if we were not connected and we become connected, initialize and display what's needed,
         // otherwise we do nothing because it was some other device that connected/disconnected
-        if (SetMidiInOutDevices() && disconnected)  // if we just got connected, initialize the MCx
+        if (SetMidiInOutDevices(inputs, outputs) && disconnected)  // if we just got connected, initialize the MCx
         {
             scriptLog("MCX: device is now connected", 0);
             // InitializeMC8();

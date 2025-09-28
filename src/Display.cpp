@@ -192,7 +192,7 @@ void LibMain::InitializeMC8()
 
     if (Surface.syncState == 1)
     {
-        // should do something to find out what kind of MCx it is
+        // may be appropriate to do something based on what kind of MCx it is
 
     }
 }
@@ -375,4 +375,55 @@ void LibMain::ClearDisplayRow(SurfaceRow row)
         PresetShortName("", row.FirstID + column);
         TogglePreset(row.FirstID + column, 0);
     }
+}
+
+// populate a MC8Color structure with colors from the specified widgets, or defaults if the widgets don't exist
+MC8Color LibMain::PopulateColors(std::string offwidget, std::string onwidget, std::string shiftwidget)
+{
+	MC8Color colors;
+
+    if (gigperformer::sdk::GigPerformerFunctions::widgetExists(offwidget))
+    {
+        colors.BackgroundColor[0] = colors.closest_index(gigperformer::sdk::GigPerformerFunctions::getWidgetFillColor(offwidget));
+        colors.LedColor[0] = colors.closest_index(gigperformer::sdk::GigPerformerFunctions::getWidgetOutlineColor(offwidget));
+        colors.TextColor[0] = (uint8_t) std::stoi(gigperformer::sdk::GigPerformerFunctions::getWidgetCaption(offwidget)) & 0x7f;
+        // colors.TextColor[0] = colors.closest_index(gigperformer::sdk::GigPerformerFunctions::getWidgetTextColor(offwidget));
+    }
+    else
+    {
+        colors.BackgroundColor[0] = colors.closest_index(MCX_DEFAULT_BACKGROUND);
+        colors.LedColor[0] = colors.closest_index(MCX_DEFAULT_LED);
+        colors.TextColor[0] = colors.closest_index(MCX_DEFAULT_TEXT);
+    }
+
+    if (gigperformer::sdk::GigPerformerFunctions::widgetExists(onwidget))
+    {
+        colors.BackgroundColor[1] = colors.closest_index(gigperformer::sdk::GigPerformerFunctions::getWidgetFillColor(onwidget));
+        colors.LedColor[1] = colors.closest_index(gigperformer::sdk::GigPerformerFunctions::getWidgetOutlineColor(onwidget));
+        // colors.TextColor[1] = colors.closest_index(gigperformer::sdk::GigPerformerFunctions::getWidgetTextColor(onwidget));
+        colors.TextColor[1] = (uint8_t)std::stoi(gigperformer::sdk::GigPerformerFunctions::getWidgetCaption(onwidget)) & 0x7f;
+    }
+    else
+    {
+        colors.BackgroundColor[1] = colors.TextColor[0];
+        colors.LedColor[1] = colors.TextColor[0];
+        colors.TextColor[1] = colors.BackgroundColor[0];
+    }
+
+    if (gigperformer::sdk::GigPerformerFunctions::widgetExists(shiftwidget))
+    {
+        colors.BackgroundColor[2] = colors.closest_index(gigperformer::sdk::GigPerformerFunctions::getWidgetFillColor(shiftwidget));
+        colors.LedColor[2] = colors.closest_index(gigperformer::sdk::GigPerformerFunctions::getWidgetOutlineColor(shiftwidget));
+        // colors.TextColor[2] = colors.closest_index(gigperformer::sdk::GigPerformerFunctions::getWidgetTextColor(shiftwidget));
+        colors.TextColor[2] = 13;
+    }
+    else
+    {
+        colors.BackgroundColor[2] = colors.TextColor[0];
+        colors.LedColor[2] = colors.TextColor[0];
+        colors.TextColor[2] = colors.BackgroundColor[0];
+    }
+    // scriptLog("Text colors: " + std::to_string(colors.TextColor[0]) + " " + std::to_string(colors.TextColor[1]), 1);
+
+	return colors;
 }
