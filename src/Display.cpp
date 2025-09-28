@@ -369,11 +369,15 @@ void LibMain::DisplayRefresh(bool forcetocurrent) /* forcetocurrent = 0 */
 void LibMain::ClearDisplayRow(SurfaceRow row)
 {
     uint8_t column;
+    MC8Color blank;
+
+    blank.makeBlank();
 
     for (column = 0; column <= Surface.RowLen -1 ; column++)
     {
         PresetShortName("", row.FirstID + column);
         TogglePreset(row.FirstID + column, 0);
+		if (Surface.Color) sendMidiMessage(Surface.MakeColorMessage(row.FirstID + column, blank));
     }
 }
 

@@ -105,6 +105,13 @@ public:
 		return bestindex;
 	}
 
+	void makeBlank()
+	{
+		LedColor[0] = 49; LedColor[1] = 49; LedColor[2] = 49;
+		TextColor[0] = 48; TextColor[1] = 48; TextColor[2] = 48;
+		BackgroundColor[0] = 49; BackgroundColor[1] = 49; BackgroundColor[2] = 49;
+	}
+
 };
 
 // The SurfaceWidget class is the conduit used for translating GP widget information and changes to control surface display controller_widgettype_bankname_position
