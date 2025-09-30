@@ -101,7 +101,7 @@ public:
 				bestindex = index;
 			}
 		}
-		if (color < 0x80000000) bestindex += 64;
+		// if (color < 0x80000000) bestindex += 64;
 		return bestindex;
 	}
 
@@ -112,6 +112,41 @@ public:
 		BackgroundColor[0] = 49; BackgroundColor[1] = 49; BackgroundColor[2] = 49;
 	}
 
+	void makeDefaultRackspace()
+	{
+		LedColor[0] = 0; LedColor[1] = 26; LedColor[2] = 26;
+		TextColor[0] = 13; TextColor[1] = 13; TextColor[2] = 13;
+		BackgroundColor[0] = 49; BackgroundColor[1] = 49; BackgroundColor[2] = 49;
+	}
+
+	void makeDefaultVariation()
+	{
+		LedColor[0] = 0; LedColor[1] = 36; LedColor[2] = 36;
+		TextColor[0] = 36; TextColor[1] = 36; TextColor[2] = 36;
+		BackgroundColor[0] = 49; BackgroundColor[1] = 49; BackgroundColor[2] = 49;
+	}
+
+	void makeDefaultSong()
+	{
+		LedColor[0] = 0; LedColor[1] = 27; LedColor[2] = 27;
+		TextColor[0] = 13; TextColor[1] = 13; TextColor[2] = 13;
+		BackgroundColor[0] = 49; BackgroundColor[1] = 49; BackgroundColor[2] = 49;
+	}
+
+	void makeDefaultSongpart()
+	{
+		LedColor[0] = 49; LedColor[1] = 27; LedColor[2] = 27;
+		TextColor[0] = 36; TextColor[1] = 36; TextColor[2] = 36;
+		BackgroundColor[0] = 49; BackgroundColor[1] = 49; BackgroundColor[2] = 49;
+	}
+
+
+	void makeDefaultWidget()
+	{
+		LedColor[0] = 49; LedColor[1] = 28; LedColor[2] = 49;
+		TextColor[0] = 11; TextColor[1] = 27; TextColor[2] = 48;
+		BackgroundColor[0] = 49; BackgroundColor[1] = 49; BackgroundColor[2] = 49;
+	}
 };
 
 // The SurfaceWidget class is the conduit used for translating GP widget information and changes to control surface display controller_widgettype_bankname_position
@@ -314,6 +349,13 @@ public:
 			// Row[x].FirstIDsysex = first_sysex[x];
 			// Row[x].MidiCommand = midi_commands[x];
 		}
+
+		// set default colors
+		RackColors.makeDefaultRackspace();
+		VariationColors.makeDefaultVariation();
+		SongColors.makeDefaultSong();
+		SongpartColors.makeDefaultSongpart();
+		WidgetColors.makeDefaultWidget();
 
 		return true;
 	}

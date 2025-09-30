@@ -82,7 +82,7 @@ std::string LibMain::makeVariationText(SurfaceRow row, int index)
     }
  
     // scriptLog("fullname = " + fullname, 1);
-    return fullname.substr(0,Surface.ShortNameLen - 1);
+    return cleanSysex(fullname).substr(0,Surface.ShortNameLen - 1);
 }
 
 // as of now there's no difference between DisplayRacks and DisplayVariations
