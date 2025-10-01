@@ -574,15 +574,16 @@ public:
     {
         bool disconnected = Surface.syncState == 0;  // we were not connected heading into this callback
 
-		for (auto x = 0; x < outputs.size(); x++) {
-            scriptLog("MCX:  Midi out found " + outputs[x], 0); 
-			if (outputs[x] == Surface.OutputDevice) { scriptLog("MCX:  Connected to " + outputs[x], 0); }
-        }
-		for (auto x = 0; x < inputs.size(); x++)
+        for (int i = 0; i < getMidiOutDeviceCount(); i++)
         {
-            scriptLog("MCX:  Midi in found " + inputs[x], 0);
-			if (inputs[x] == Surface.InputDevice) { scriptLog("MCX:  Connected to " + inputs[x], 0); }
+            scriptLog("GetMidiOutDeviceName(" + std::to_string(i) + ") = " + getMidiOutDeviceName(i), 0);
         }
+
+        for (int i = 0; i < outputs.size(); i++)
+        {
+            scriptLog("Output device " + std::to_string(i) + " = " + outputs[i], 0);
+        }
+
         // if we were not connected and we become connected, initialize and display what's needed,
         // otherwise we do nothing because it was some other device that connected/disconnected
         if (SetMidiInOutDevices(inputs, outputs) && disconnected)  // if we just got connected, initialize the MCx
