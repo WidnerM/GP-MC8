@@ -38,7 +38,7 @@ std::string  LibMain::GetPanelXML(int index)
 
 
 // List of menu items
-std::vector<std::string> menuNames = { "Reset MC midi ports" };
+std::vector<std::string> menuNames = { "Reset MC midi ports", "Show surface status"};
 
 
 int LibMain::GetMenuCount()
@@ -67,14 +67,16 @@ void LibMain::InvokeMenu(int index)
         {
         case 0:
 			SetMidiInOutDevices();
-			Surface.Initialize();
-			OnStatusChanged(GPStatus_GigFinishedLoading);
-            Surface.syncState = 1;
-			Surface.LastRackspace = -1; // force a re-initialization of the surface
-			OnRackspaceActivated();
+			// Surface.Initialize();
+			// OnStatusChanged(GPStatus_GigFinishedLoading);
+            // Surface.syncState = 1;
+			// Surface.LastRackspace = -1; // force a re-initialization of the surface
+			// OnRackspaceActivated();
+			DisplayRefresh(true);
             break;
         case 1:
-            SetSurfaceLayout("mc6");
+            ShowState();
+            // SetSurfaceLayout("mc6");
             break;
         case 2:
             SetSurfaceLayout("mc6 pro");
@@ -96,26 +98,41 @@ void LibMain::InvokeMenu(int index)
     }
 }
 
+void LibMain::ShowState()
+{
+    scriptLog("MCX: Current State:", 0);
+    scriptLog("     Input Device: " + Surface.InputDevice, 0);
+    scriptLog("     Output Device: " + Surface.OutputDevice, 0);
+    scriptLog("     Page: " + std::to_string(Surface.Page), 0);
+    for (int row = 0; row < 4; row++)
+    {
+        scriptLog("     Row " + std::to_string(row) + " showing " + std::to_string(Surface.Row[row].Showing) + ".  Firstshown is " + std::to_string(Surface.Row[row].FirstShown), 0);
+    }
+}
 
 void LibMain::sendMidiMessage(std::string MidiMessage) {
     
-    for (int i = 0; i < MidiOut.size(); i++) {
-        sendMidiMessageToMidiOutDevice(MidiOut[i], MidiMessage);
-    }
+    // for (int i = 0; i < MidiOut.size(); i++) {
+    //    sendMidiMessageToMidiOutDevice(MidiOut[i], MidiMessage);
+    // }
+    sendMidiMessageToMidiOutDevice(Surface.OutputDevice, MidiMessage);
 }
 
 void LibMain::sendMidiMessage(gigperformer::sdk::GPMidiMessage MidiMessage)
 {
     
-    for (int i = 0; i < MidiOut.size(); i++) {
-        sendMidiMessageToMidiOutDevice(MidiOut[i], MidiMessage);
-    }
+    //for (int i = 0; i < MidiOut.size(); i++) {
+    //    sendMidiMessageToMidiOutDevice(MidiOut[i], MidiMessage);
+    //}
+    sendMidiMessageToMidiOutDevice(Surface.OutputDevice, MidiMessage);
+
 }
 
 void LibMain::sendMidiMessage(const uint8_t* MidiMessage, int length) {
-    for (int i = 0; i < MidiOut.size(); i++) {
-        sendMidiMessageToMidiOutDevice(MidiOut[i], MidiMessage, length);
-    }
+    // for (int i = 0; i < MidiOut.size(); i++) {
+    //    sendMidiMessageToMidiOutDevice(MidiOut[i], MidiMessage, length);
+    //}
+    sendMidiMessageToMidiOutDevice(Surface.OutputDevice, MidiMessage, length);
 }
 
 // MCx controllers come in different configurations

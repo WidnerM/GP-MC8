@@ -36,3 +36,26 @@
 #define MCX_PAGE1 0x28
 #define MCX_PAGE2 0x29
 
+#define ROW_0_PAGE_BACK 16
+#define ROW_0_SELECT 17
+#define ROW_0_PAGE_FORWARD 19
+
+#define ROW_1_PAGE_BACK 20
+#define ROW_1_SELECT 21
+#define ROW_1_PAGE_FORWARD 23
+
+#define ROW_2_PAGE_BACK 24
+#define ROW_2_SELECT 25
+#define ROW_2_PAGE_FORWARD 27
+
+#define ROW_3_PAGE_BACK 28
+#define ROW_3_SELECT 29
+#define ROW_3_PAGE_FORWARD 31
+
+#define AUX_1_PAGE_BACK 32
+#define AUX_1_SELECT 33
+#define AUX_1_PAGE_FORWARD 35
+
+#define AUX_2_PAGE_BACK 36
+#define AUX_2_SELECT 37
+#define AUX_2_PAGE_FORWARD 39

@@ -210,68 +210,6 @@ std::string LibMain::GPColorToSLColorHex(int color)
 }
 
 
-
-// these should only be called if we're changing one item and not touching the rest of the screen
-void LibMain::ShowTopLabelColor(uint8_t position, uint8_t color)
-{
-    uint8_t knobcolor[] = TOPBAR_SYSEX;
-    knobcolor[KNOB_Column] = position;
-    knobcolor[KNOB_Data] = color;
-    sendMidiMessage(knobcolor, sizeof(knobcolor));
-}
-
-void LibMain::ShowBottomLabelColor(uint8_t position, uint8_t color)
-{
-    uint8_t knobcolor[] = BOTBAR_SYSEX;
-    knobcolor[KNOB_Column] = position;
-    knobcolor[KNOB_Data] = color;
-    sendMidiMessage(knobcolor, sizeof(knobcolor));
-}
-
-
-void LibMain::ShowBottomHighlight(uint8_t position, uint8_t color)  // color is 1 for highlight, 0 for not highlight
-{
-    uint8_t knobcolor[] = BOTBAR_HILIGHT_SYSEX;
-    knobcolor[KNOB_Column] = position;
-    knobcolor[KNOB_Data] = color;
-    sendMidiMessage(knobcolor, sizeof(knobcolor));
-}
-
-
-void LibMain::DisplayText(uint8_t column, uint8_t row, std::string text)  // top row = 0, bottom = 3
-{
-    std::string hexmessage, subtext, binmessage;
-
-    // format is Sysex header + property (02) + column (0-8) + 01 (text ID) + row (0-3) + text (up to 9 char) + 00 + end
-    subtext = cleanSysex(text);
-    subtext = subtext.substr(0, 9);
-    hexmessage = SLMK3_SYS_HEADER + (std::string) " 02 " + gigperformer::sdk::GPUtils::intToHex(column) + " 01 " +
-                 gigperformer::sdk::GPUtils::intToHex(row) + " " + textToHexString(subtext) + " 00 f7";
-    // scriptLog("Text: " + hexmessage, 1);
-    binmessage = gigperformer::sdk::GPUtils::hex2binaryString(hexmessage);
-    sendMidiMessage(binmessage);
-}
-
-// The following three ShowKnobXXX() routines are unused for now because the SLMKIII screen gets glitchy and drops items if we set them all
-// in succession using these sysex calls.  Instead we do it all in the DisplayKnobs() routine all in one group.
-void LibMain::ShowKnobColor(uint8_t position, uint8_t color)
-{
-    uint8_t knobcolor[] = KNOB_COLOR_SYSEX;
-    knobcolor[KNOB_Column] = position;
-    knobcolor[KNOB_Data] = color;
-    sendMidiMessage(knobcolor, sizeof(knobcolor));
-} 
-
-void LibMain::ShowKnobLabel(uint8_t column, const std::string label)
-{
-    DisplayText(column, 0, label);
-}
-
-void LibMain::ShowKnobCaption(uint8_t column, const std::string label)
-{
-    DisplayText(column, 1, label);
-}
-
 void LibMain::SetButtonColor(uint8_t button, uint8_t color)  // make and send midi message
 {
     uint8_t MidiMessage[] = { 0xBF, 0, 0 };  // CC channel 16 message
@@ -279,13 +217,6 @@ void LibMain::SetButtonColor(uint8_t button, uint8_t color)  // make and send mi
     MidiMessage[1] = button;
     MidiMessage[2] = color;
     sendMidiMessage(MidiMessage, sizeof(MidiMessage));
-}
-
-void LibMain::SetButtonRGBColor(uint8_t button, int value) // int parameter will display RGB color using sysex
-{
-    sendMidiMessage(gigperformer::sdk::GPMidiMessage(SLMK3_SYS_HEADER + (std::string) " 03 " +
-                                                     gigperformer::sdk::GPUtils::intToHex(button) + " 01 " +
-                                                     GPColorToSLColorHex(value) + " f7"));
 }
 
 // Show value of a widget on its linked control surface item

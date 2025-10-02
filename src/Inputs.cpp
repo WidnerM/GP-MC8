@@ -19,6 +19,23 @@ void LibMain::ProcessButton(uint8_t button, uint8_t value)  // processes a midi 
 
         // I really need to completely re-do this to make it more flexible and behavior not not so "encoded" into different bits
 
+        if (button == MCX_PAGE1) // moves us to page 0
+        {
+            TogglePage(0);
+            return;
+        }
+        else if (button == MCX_PAGE2)  // moves to page 1
+        {
+            TogglePage(1);
+            return;
+        }
+        else if (button <= 15 ) // this will capture all our primary button actions (cc 0-15)
+        {
+            ToggleButton(button);
+            return;
+        }
+
+
         uint8_t thisposition = button & 0x03;
         uint8_t thisrow = (button >> 2) & 0x03;
         uint8_t thisaction = (button >> 4) & 0x03;
@@ -40,28 +57,98 @@ void LibMain::ProcessButton(uint8_t button, uint8_t value)  // processes a midi 
             // scriptLog("Double sync using row " + std::to_string(thisrow), 1);
         }
 
-        if (thisaction == MCX_AUX_ACTION)
+        if (button >= AUX_1_PAGE_BACK && button <= AUX_2_PAGE_FORWARD) // these are our Aux buttons to page rows up/down or select what's shown
         {
+            thisaction = MCX_ROW_ACTION;
             // the Aux buttons will duplicate the ROW_ACTION buttons, but we need to adjust for which Page the MC8 bank is on
-            if (button == MCX_PAGE1)
+            switch (button)
             {
-                TogglePage(0);
-            }
-            else if (button == MCX_PAGE2)
-            {
-                TogglePage(1);
-            }
-            else if (button < MCX_PAGE1) // this is where we catch buttons 32-29 on the aux switches
-            {
-                thisrow = thisrow + Surface.Page * 2; // only one set of Aux buttons, so we use Page to map them to rows
-                otherrow = otherrow + Surface.Page * 2;
-                thisaction = MCX_ROW_ACTION;
-            }
-        }
-        else if (thisaction == MCX_BUTTON_ACTION) // this will capture all our primary button actions (cc 0-15)
-        {
-            ToggleButton(button);
-        }
+			case AUX_1_PAGE_BACK:
+                if (Surface.Page == 0)
+                {
+                    button = ROW_0_PAGE_BACK;
+                    thisrow = 0;
+                    otherrow = 1;
+                }
+                else
+                {
+                    button = ROW_2_PAGE_BACK;
+					thisrow = 2;
+                    otherrow = 3;
+                }
+				break;
+			case AUX_1_SELECT:
+                if (Surface.Page == 0)
+                {
+                    button = ROW_0_SELECT;
+                    thisrow = 0;
+                    otherrow = 1;
+                }
+                else
+                {
+                    button = ROW_2_SELECT;
+                    thisrow = 2;
+                    otherrow = 3;
+                }
+				break;
+			case AUX_1_PAGE_FORWARD:
+                if (Surface.Page == 0)
+                {
+                    button = ROW_0_PAGE_FORWARD;
+                    thisrow = 0;
+                    otherrow = 1;
+                }
+                else
+                {
+                    button = ROW_2_PAGE_FORWARD;
+                    thisrow = 2;
+                    otherrow = 3;
+				}
+				break;
+			case AUX_2_PAGE_BACK:
+                if (Surface.Page == 0)
+                {
+                    button = ROW_1_PAGE_BACK;
+                    thisrow = 1;
+                    otherrow = 0;
+                }
+                else
+                {
+                    button = ROW_3_PAGE_BACK;
+                    thisrow = 3;
+                    otherrow = 2;
+				}
+                break;
+			case AUX_2_SELECT:
+                if (Surface.Page == 0)
+                {
+                    button = ROW_1_SELECT;
+                    thisrow = 1;
+                    otherrow = 0;
+                }
+                else
+                {
+                    button = ROW_3_SELECT;
+                    thisrow = 3;
+					otherrow = 2;
+				}
+				break;
+            case AUX_2_PAGE_FORWARD:
+                if (Surface.Page == 0)
+                {
+                    button = ROW_1_PAGE_FORWARD;
+                    thisrow = 1;
+                    otherrow = 0;
+                }
+                else
+                {
+                    button = ROW_3_PAGE_FORWARD;
+                    thisrow = 3;
+					otherrow = 2;
+				}
+				break;
+            } // end switch
+		} // end if aux button
 
         if (thisaction == MCX_ROW_ACTION)
         {
@@ -101,7 +188,7 @@ void LibMain::ProcessButton(uint8_t button, uint8_t value)  // processes a midi 
                     break;
                 case SHOW_VARS_PARTS:
                 case SHOW_RACKS_SONGS:
-                    if (Surface.Row[thisrow].Showing == Surface.Row[otherrow].Showing)
+                    if (Surface.rowsLinked(Surface.Row[thisrow]))
                     {
                         Surface.Row[std::max(thisrow, otherrow)].FirstShown += 2* Surface.RowLen;
                         DisplayVariations(Surface.Row[std::max(thisrow, otherrow)], 0, Surface.RowLen, false);

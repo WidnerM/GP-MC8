@@ -64,6 +64,7 @@ public:
     void sendMidiMessage(gigperformer::sdk::GPMidiMessage MidiMessage);
     void sendMidiMessage(const uint8_t* MidiMessage, int length);
     void SetSurfaceLayout(std::string config);
+    void ShowState();
 
     // from Display.cpp - functions for displaying things on the MC8 display
     uint8_t calculateMCChecksum(uint16_t len, uint8_t *ptr);
@@ -87,19 +88,9 @@ public:
     void TogglePage(uint8_t page);
 
     void InitializeMC8();
-    void DisplayText(uint8_t column, uint8_t row, std::string text);
 
     std::string GPColorToSLColorHex(int color);
     void SetButtonColor(uint8_t button, uint8_t color);
-    void SetButtonRGBColor(uint8_t button, int color);
-
-    void ShowTopLabelColor(uint8_t position, uint8_t color);
-    void ShowBottomLabelColor(uint8_t position, uint8_t color);
-    void ShowBottomHighlight(uint8_t position, uint8_t color);
-
-    void ShowKnobColor(uint8_t position, uint8_t color);
-    void ShowKnobCaption(uint8_t column, const std::string caption);
-    void ShowKnobLabel(uint8_t column, const std::string caption);
 
     void DisplayWidgetValue(const SurfaceRow &row, SurfaceWidget widget);
 
@@ -144,24 +135,23 @@ public:
 
     bool SetMidiInOutDevices(std::vector< std::string> inputs = {}, std::vector< std::string> outputs = {}) {
         bool foundin = false, foundout = false;
+        int i, j;
         std::string name;
-        std::vector <std::string> validInPorts = {};
-        std::vector <std::string> validOutPorts = {};
 
-        for (int i = 0; i < getMidiInDeviceCount(); i++)
+		// scriptLog("MCX:  MIDI IN device count = " + std::to_string(getMidiInDeviceCount()), 0);
+        for (i = 0; i < getMidiInDeviceCount(); i++)
         {
             name = getMidiInDeviceName(i);
-            for (int j = 0; j < MidiIn.size(); j++) {
+            for (j = 0; j < MidiIn.size(); j++) {
                 try
                 {
                     if (std::regex_match(name, std::regex(MidiIn[j])) || name == MidiIn[j]) {
                         listenForMidi(getMidiInDeviceName(i), 1);
                         foundin = true;
-                        validInPorts.push_back(name);
                         scriptLog("MCX:  Using midi in " + name, 0);
 						Surface.InputDevice = name;
                     }
-                    else scriptLog("MCX: " + name + " does not match " + MidiIn[j], 0);
+                    // else scriptLog("MCX: " + name + " does not match " + MidiIn[j], 0);
                 }
                 catch (std::regex_error& e)
                 {
@@ -170,49 +160,51 @@ public:
                     if (name == MidiIn[j]) {
                         listenForMidi(getMidiInDeviceName(i), 1);
                         foundin = true;
-                        validInPorts.push_back(name);
 						Surface.InputDevice = name;
                         scriptLog("MCX:  Using midi in " + name, 0);
                     }
                 }
             }
         }
-        for (int i = 0; i < getMidiOutDeviceCount(); i++)
+
+        // scriptLog("MCX:  MIDI OUT device count = " + std::to_string(getMidiOutDeviceCount()), 0);
+        for (i = 0; i < getMidiOutDeviceCount(); i++)
         {
             name = getMidiOutDeviceName(i);
-            for (int j = 0; j < MidiOut.size(); j++) {
+            for (j = 0; j < MidiOut.size(); j++) {
                 try
                 {
                     if (std::regex_match(name, std::regex(MidiOut[j])) || name == MidiOut[j])
                     {
                         foundout = true;
-                        if (name.find("MC8 Pro") != std::string::npos) { SetSurfaceLayout("mc8 pro"); }
+                        if (name == Surface.OutputDevice) scriptLog("MCX:  Reconnected " + name, 0);
+                        else if (name.find("MC8 Pro") != std::string::npos) { SetSurfaceLayout("mc8 pro"); }
                         else if (name.find("MC8") != std::string::npos) { SetSurfaceLayout("mc8"); }
                         else if (name.find("MC6 Pro") != std::string::npos) { SetSurfaceLayout("mc6 pro"); }
                         else if (name.find("MC6") != std::string::npos) { SetSurfaceLayout("mc6"); }
-                        validOutPorts.push_back(name);
                         Surface.OutputDevice = name;
                         scriptLog("MCX:  Using midi out " + name, 0);
                     }
-                    else scriptLog("MCX: " + name + " does not match " + MidiOut[j], 0);
+                    // else scriptLog("MCX: " + name + " does not match " + MidiOut[j], 0);
                 }
                 catch (std::regex_error& e)
                 {
                     scriptLog("MCX:  Regex error in " + MidiOut[j] + " : " + e.what(), 1);
                     if (name == MidiOut[j]) {
                         foundout = true;
-                        if (name.find("MC8 Pro") != std::string::npos) { SetSurfaceLayout("mc8 pro"); }
+                        if (name == Surface.OutputDevice) scriptLog("MCX:  Reconnected " + name, 0);
+                        else if (name.find("MC8 Pro") != std::string::npos) { SetSurfaceLayout("mc8 pro"); }
                         else if (name.find("MC8") != std::string::npos) { SetSurfaceLayout("mc8"); }
                         else if (name.find("MC6 Pro") != std::string::npos) { SetSurfaceLayout("mc6 pro"); }
                         else if (name.find("MC6") != std::string::npos) { SetSurfaceLayout("mc6"); }
-                        validOutPorts.push_back(name);
                         Surface.OutputDevice = name;
                         scriptLog("MCX:  Using midi out " + name, 0);
                     }
                 }
             }
         }
-        MidiOut = validOutPorts;
+
+        // MidiOut = validOutPorts;
         // scriptLog(foundout ? EXTENSION_IDENTIFIER + (std::string)" using midi out " + MidiOut : EXTENSION_IDENTIFIER + (std::string)"COULD NOT FIND midi out " + MidiOut, 1);
         if (foundin && foundout) Surface.syncState = 1; else Surface.syncState = 0; // set when both in and out are connected
         return (foundin && foundout);
@@ -574,7 +566,7 @@ public:
     {
         bool disconnected = Surface.syncState == 0;  // we were not connected heading into this callback
 
-        for (int i = 0; i < getMidiOutDeviceCount(); i++)
+        /*for (int i = 0; i < getMidiOutDeviceCount(); i++)
         {
             scriptLog("GetMidiOutDeviceName(" + std::to_string(i) + ") = " + getMidiOutDeviceName(i), 0);
         }
@@ -584,6 +576,16 @@ public:
             scriptLog("Output device " + std::to_string(i) + " = " + outputs[i], 0);
         }
 
+        for (int i = 0; i < getMidiInDeviceCount(); i++)
+        {
+            scriptLog("GetMidiInDeviceName(" + std::to_string(i) + ") = " + getMidiInDeviceName(i), 0);
+        }
+
+        for (int i = 0; i < inputs.size(); i++)
+        {
+            scriptLog("Input device " + std::to_string(i) + " = " + inputs[i], 0);
+        }*/
+
         // if we were not connected and we become connected, initialize and display what's needed,
         // otherwise we do nothing because it was some other device that connected/disconnected
         if (SetMidiInOutDevices(inputs, outputs) && disconnected)  // if we just got connected, initialize the MCx
@@ -591,8 +593,25 @@ public:
             scriptLog("MCX: device is now connected", 0);
             // InitializeMC8();
 
-			Surface.LastRackspace = -1; // force OnRackspaceActivated to do full redisplay
-            OnRackspaceActivated();  // We call this to set everything up for the current Rackspace
+			// Surface.LastRackspace = -1; // force OnRackspaceActivated to do full redisplay
+            // OnRackspaceActivated();  // We call this to set everything up for the current Rackspace
+            if (inSetlistMode() == true)
+            {
+                CurrentBankName(getSongName(getCurrentSongIndex()));
+                LongPresetNames(getSongpartName(getCurrentSongIndex(), getCurrentSongpartIndex()));
+                DisplayRefresh(true);  // force display of rackspaces/songs/variations/songparts to include current
+                if (Surface.Color) EngagePreset(33, 2); // this is what we have to do to change the Pro color pallette (for now)
+            }
+            else
+            {
+                CurrentBankName(getRackspaceName(getCurrentRackspaceIndex()));
+                LongPresetNames(getVariationName(getCurrentRackspaceIndex(), getCurrentVariationIndex()));
+                DisplayRefresh(true); // force display of rackspaces/songs/variations/songparts to include current
+                if (Surface.Color) EngagePreset(33, 1);
+            }
+
+            // set the longpresetname for the current variation or songpart
+            EngagePreset(32, 1);
         }
 		else if (disconnected) { scriptLog("MCX: devicelist changed but still disconnected", 0); }
     }

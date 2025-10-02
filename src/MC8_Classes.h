@@ -363,7 +363,7 @@ public:
 	bool rowsLinked(SurfaceRow row)
 	{
 		if (row.WidgetID == BOTTOM_TAG || row.WidgetID == TOP_TAG) return (Row[TOP_ROW].Showing == Row[BOTTOM_ROW].Showing);
-		else if (row.WidgetID == B2_TAG || row.WidgetID == T2_TAG) return (Row[T2_ROW].Showing == Row[BOTTOM_ROW].Showing);
+		else if (row.WidgetID == B2_TAG || row.WidgetID == T2_TAG) return (Row[T2_ROW].Showing == Row[B2_ROW].Showing);
 		else return false;
 	}
 
