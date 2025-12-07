@@ -192,7 +192,10 @@ void LibMain::DisplayVariations(SurfaceRow & row, uint8_t firstbutton, uint8_t n
         {
             if (row.Showing == SHOW_RACKS_SONGS)
             {
-                if (inSetlistMode()) sendMidiMessage(Surface.MakeColorMessage(row.FirstID + x, Surface.SongColors));
+                if (inSetlistMode())
+                {
+                    sendMidiMessage(Surface.MakeColorMessage(row.FirstID + x, Surface.SongColors));
+                }
                 else sendMidiMessage(Surface.MakeColorMessage(row.FirstID + x, Surface.RackColors));
             }
             if (row.Showing == SHOW_VARS_PARTS)

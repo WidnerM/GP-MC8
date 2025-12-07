@@ -141,6 +141,10 @@ void LibMain::PresetShortName(std::string text, uint8_t position)
     // std::string cleantext = cleanSysex(text) + (std::string) "                                                ";
     // SendTextToMCx(cleantext.substr(0,Surface.ShortNameLen), SHORTNAME_OP, position, 0x00);
     sendMidiMessage(Surface.PresetShortname(position, text));
+    if (widgetExists("mcx_d_" + std::to_string(position)))
+    {
+        setWidgetCaption("mcx_d_" + std::to_string(position), text);
+	}
 }
 
 void LibMain::PresetToggleName(std::string text, uint8_t position)
@@ -162,7 +166,6 @@ void LibMain::LongPresetNames(std::string text)
 {
     if (Surface.Color)
     {
-        // PresetLongName(text, 23);
         PresetLongName(text, 22); // putting the preset longname (variation or songpart) here
 		EngagePreset(32, 1); // engage that preset to display the longname
         // EngagePreset(23, 1); // engage to display the preset longname
@@ -321,8 +324,8 @@ MC8Color LibMain::PopulateColors(std::string offwidget, std::string onwidget, st
     {
         colors.BackgroundColor[0] = colors.closest_index(gigperformer::sdk::GigPerformerFunctions::getWidgetFillColor(offwidget));
         colors.LedColor[0] = colors.closest_index(gigperformer::sdk::GigPerformerFunctions::getWidgetOutlineColor(offwidget));
-        colors.TextColor[0] = (uint8_t) std::stoi(gigperformer::sdk::GigPerformerFunctions::getWidgetCaption(offwidget)) & 0x7f;
-        // colors.TextColor[0] = colors.closest_index(gigperformer::sdk::GigPerformerFunctions::getWidgetTextColor(offwidget));
+        // colors.TextColor[0] = (uint8_t) std::stoi(gigperformer::sdk::GigPerformerFunctions::getWidgetCaption(offwidget)) & 0x7f;
+        colors.TextColor[0] = colors.closest_index(gigperformer::sdk::GigPerformerFunctions::getWidgetTextColor(offwidget));
     }
     else
     {

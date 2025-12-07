@@ -14,16 +14,16 @@ project(${PROJECT_NAME} VERSION 1.0.0)
 include(FetchContent)
 FetchContent_Declare(
   gp-sdk
-  GIT_REPOSITORY https://github.com/gigperformer/gp-sdk.git
+  # GIT_REPOSITORY https://github.com/gigperformer/gp-sdk.git
   # GIT_TAG a50f8e4a2ce3ce6a7599beac307804a62649eb33 # v44
   # GIT_TAG 3d4fa49c3d6f96851961893ce51896b4450e59ae # v46
   # GIT_TAG 23c6583ff0137a620a421f6378bb2f6fc761de61 # 50
   # GIT_TAG 383ca00e99972fbedd9e71ae4d342a658de273c1 # 51
   # GIT_TAG 897b3452b99f2d7fc02502d0c90d89cd54b51c7e
   # GIT_TAG 26bc1ed2568b94e1c95ca2348f03afcbb0d8fb16 # 4.7 release
-  GIT_TAG 756ecd249f1ff00f3d3a5955769408f74c9fa453 # SDK 60
-  # GIT_REPOSITORY https://github.com/WidnerM/gp-sdk.git
-  # GIT_TAG 1e62325f8ec5b36a94f3cfe0b5395f325e149479
+  # GIT_TAG 756ecd249f1ff00f3d3a5955769408f74c9fa453 # SDK 60
+  GIT_REPOSITORY https://github.com/WidnerM/gp-sdk.git
+  GIT_TAG 1e62325f8ec5b36a94f3cfe0b5395f325e149479
 
 )
 FetchContent_MakeAvailable(gp-sdk)
