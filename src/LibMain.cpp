@@ -66,6 +66,8 @@ void LibMain::InvokeMenu(int index)
         switch (index)
         {
         case 0:
+            MidiIn = ParseWidgetName(getWidgetCaption(MIDI_IN_WIDGETNAME), ',');
+			MidiOut = ParseWidgetName(getWidgetCaption(MIDI_OUT_WIDGETNAME), ',');
 			SetMidiInOutDevices();
 			// Surface.Initialize();
 			// OnStatusChanged(GPStatus_GigFinishedLoading);

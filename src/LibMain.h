@@ -84,8 +84,10 @@ public:
     std::string makeVariationText(SurfaceRow row, int index);
     void Notify(std::string text, uint8_t duration);
     void TogglePreset(uint8_t position, uint8_t value);
+    void TogglePreset(SurfaceRow row, uint8_t position, uint8_t value);
     void EngagePreset(uint8_t position, uint8_t value);
     void TogglePage(uint8_t page);
+	void copyWidgetColors(std::string sourcewidget, std::string destinationwidget);
 
     void InitializeMC8();
 
@@ -151,7 +153,7 @@ public:
                         scriptLog("MCX:  Using midi in " + name, 0);
 						Surface.InputDevice = name;
                     }
-                    // else scriptLog("MCX: " + name + " does not match " + MidiIn[j], 0);
+                    else scriptLog("MCX: " + name + " does not match " + MidiIn[j], 0);
                 }
                 catch (std::regex_error& e)
                 {

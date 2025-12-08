@@ -196,12 +196,21 @@ void LibMain::DisplayVariations(SurfaceRow & row, uint8_t firstbutton, uint8_t n
                 {
                     sendMidiMessage(Surface.MakeColorMessage(row.FirstID + x, Surface.SongColors));
                 }
-                else sendMidiMessage(Surface.MakeColorMessage(row.FirstID + x, Surface.RackColors));
+                else
+                {
+                    sendMidiMessage(Surface.MakeColorMessage(row.FirstID + x, Surface.RackColors));
+                }
             }
             if (row.Showing == SHOW_VARS_PARTS)
             {
-                if (inSetlistMode()) sendMidiMessage(Surface.MakeColorMessage(row.FirstID + x, Surface.SongpartColors));
-                else sendMidiMessage(Surface.MakeColorMessage(row.FirstID + x, Surface.VariationColors));
+                if (inSetlistMode())
+                {
+                    sendMidiMessage(Surface.MakeColorMessage(row.FirstID + x, Surface.SongpartColors));
+                }
+                else
+                {
+                    sendMidiMessage(Surface.MakeColorMessage(row.FirstID + x, Surface.VariationColors));
+                }
             }
             if (row.Showing == SHOW_BUTTONS)  // should never actually be in this function when SHOW_BUTTONS is set
             {
@@ -214,7 +223,9 @@ void LibMain::DisplayVariations(SurfaceRow & row, uint8_t firstbutton, uint8_t n
         if (positionindex > count) // clear the text if there's no song this high
         {
             PresetShortName("", row.FirstID + x);
-            TogglePreset(row.FirstID + x, 0); // turn toggle off
+            // TogglePreset(row.FirstID + x, 0); // turn toggle off
+            TogglePreset(row, x, 0); // turn toggle off
+
             // SetButtonColor(MKIII_DISPLAY_BUTTON_1 + x, SLMKIII_BLACK); // clear the button if no song/var is here
         }
         else
@@ -223,9 +234,10 @@ void LibMain::DisplayVariations(SurfaceRow & row, uint8_t firstbutton, uint8_t n
             if (positionindex == current)
             {
                 if (!Surface.Color) variationname = (std::string) "(" + variationname.substr(0, Surface.ShortNameLen - 2) + ")";
-                TogglePreset(row.FirstID + x, 1); // turn toggle off
+                // TogglePreset(row.FirstID + x, 1); // turn toggle off
+                TogglePreset(row, x, 1); // turn toggle off
             }
-            else TogglePreset(row.FirstID + x, 0); // turn toggle on
+            else TogglePreset(row, x, 0); // turn toggle on
             PresetShortName(variationname, row.FirstID + x);
         }
         

@@ -222,7 +222,85 @@ void LibMain::SetButtonColor(uint8_t button, uint8_t color)  // make and send mi
     sendMidiMessage(MidiMessage, sizeof(MidiMessage));
 }
 
+void LibMain::copyWidgetColors(std::string sourcewidget, std::string destinationwidget)
+{
+    gigperformer::sdk::GigPerformerFunctions::setWidgetFillColor(destinationwidget, gigperformer::sdk::GigPerformerFunctions::getWidgetFillColor(sourcewidget));
+    gigperformer::sdk::GigPerformerFunctions::setWidgetOutlineColor(destinationwidget, gigperformer::sdk::GigPerformerFunctions::getWidgetOutlineColor(sourcewidget));
+    gigperformer::sdk::GigPerformerFunctions::setWidgetTextColor(destinationwidget, gigperformer::sdk::GigPerformerFunctions::getWidgetTextColor(sourcewidget));
+}
+
 // Show value of a widget on its linked control surface item
+void LibMain::TogglePreset(SurfaceRow row, uint8_t position, uint8_t value)
+{
+	TogglePreset(row.FirstID + position, value); // toggle the physical controller with midi
+    
+    // color the GP widget display that mimics the MCx Pro displays
+	uint8_t widgetnumber = row.FirstID + position;
+	std::string widgetname = "mcx_d_" + std::to_string(widgetnumber);
+    if (row.Showing == SHOW_RACKS_SONGS)
+    {
+        if (inSetlistMode())
+        {
+            if (value > 0)
+            {
+                copyWidgetColors(MCX_COLOR_SONG_SELECTED, widgetname);
+            }
+            else
+            {
+                copyWidgetColors(MCX_COLOR_SONG_UNSELECTED, widgetname);
+			}
+        }
+        else
+        {
+            if (value > 0)
+            {
+                copyWidgetColors(MCX_COLOR_RACKSPACE_SELECTED, widgetname);
+            }
+            else
+            {
+                copyWidgetColors(MCX_COLOR_RACKSPACE_UNSELECTED, widgetname);
+            }
+        }
+    }
+    else if (row.Showing == SHOW_VARS_PARTS)
+    {
+        if (inSetlistMode())
+        {
+            if (value > 0)
+            {
+                copyWidgetColors(MCX_COLOR_SONGPART_SELECTED, widgetname);
+            }
+            else
+            {
+                copyWidgetColors(MCX_COLOR_SONGPART_UNSELECTED, widgetname);
+            }
+        }
+        else
+        {
+            if (value > 0)
+            {
+                copyWidgetColors(MCX_COLOR_VARIATION_SELECTED, widgetname);
+            }
+            else
+            {
+                copyWidgetColors(MCX_COLOR_VARIATION_UNSELECTED, widgetname);
+            }
+        }
+    }
+    else if (row.Showing == SHOW_BUTTONS)
+    {
+            if (value > 0)
+            {
+                copyWidgetColors(MCX_COLOR_WIDGET_SELECTED, widgetname);
+            }
+            else
+            {
+                copyWidgetColors(MCX_COLOR_WIDGET_UNSELECTED, widgetname);
+            }
+    }
+    
+
+}
 
 void LibMain::TogglePreset(uint8_t position, uint8_t value)
 {
@@ -259,7 +337,7 @@ void LibMain::DisplayWidgetValue(const SurfaceRow &row, SurfaceWidget widget)
 { 
 
     PresetShortName(widget.Value > 0 ? widget.ShortNameOn : widget.ShortNameOff, row.FirstID + widget.Column);
-    TogglePreset(row.FirstID + widget.Column, widget.Value == 0 ? 0 : 1);
+    TogglePreset(row, widget.Column, widget.Value == 0 ? 0 : 1);
     // PresetLongName(widget.LongName, Row.FirstID + widget.Column);
 }
 
@@ -310,7 +388,7 @@ void LibMain::ClearDisplayRow(SurfaceRow row)
     for (column = 0; column <= Surface.RowLen -1 ; column++)
     {
         PresetShortName("", row.FirstID + column);
-        TogglePreset(row.FirstID + column, 0);
+        TogglePreset(row, column, 0);
 		if (Surface.Color) sendMidiMessage(Surface.MakeColorMessage(row.FirstID + column, blank));
     }
 }
@@ -338,8 +416,8 @@ MC8Color LibMain::PopulateColors(std::string offwidget, std::string onwidget, st
     {
         colors.BackgroundColor[1] = colors.closest_index(gigperformer::sdk::GigPerformerFunctions::getWidgetFillColor(onwidget));
         colors.LedColor[1] = colors.closest_index(gigperformer::sdk::GigPerformerFunctions::getWidgetOutlineColor(onwidget));
-        // colors.TextColor[1] = colors.closest_index(gigperformer::sdk::GigPerformerFunctions::getWidgetTextColor(onwidget));
-        colors.TextColor[1] = (uint8_t)std::stoi(gigperformer::sdk::GigPerformerFunctions::getWidgetCaption(onwidget)) & 0x7f;
+        colors.TextColor[1] = colors.closest_index(gigperformer::sdk::GigPerformerFunctions::getWidgetTextColor(onwidget));
+        // colors.TextColor[1] = (uint8_t)std::stoi(gigperformer::sdk::GigPerformerFunctions::getWidgetCaption(onwidget)) & 0x7f;
     }
     else
     {
@@ -352,8 +430,8 @@ MC8Color LibMain::PopulateColors(std::string offwidget, std::string onwidget, st
     {
         colors.BackgroundColor[2] = colors.closest_index(gigperformer::sdk::GigPerformerFunctions::getWidgetFillColor(shiftwidget));
         colors.LedColor[2] = colors.closest_index(gigperformer::sdk::GigPerformerFunctions::getWidgetOutlineColor(shiftwidget));
-        // colors.TextColor[2] = colors.closest_index(gigperformer::sdk::GigPerformerFunctions::getWidgetTextColor(shiftwidget));
-        colors.TextColor[2] = 13;
+        colors.TextColor[2] = colors.closest_index(gigperformer::sdk::GigPerformerFunctions::getWidgetTextColor(shiftwidget));
+        // colors.TextColor[2] = 13;
     }
     else
     {
