@@ -329,7 +329,7 @@ public:
 		std::string row_tags[] = TAG_ARRAY;
 		std::string row_types[] = ROW_TYPE_ARRAY;
 		std::string row_labels[] = ROW_LABEL_ARRAY;
-        int row_showing[] = {SHOW_BUTTONS, SHOW_VARS_PARTS, SHOW_RACKS_SONGS, SHOW_BUTTONS, SHOW_KNOBS, SHOW_KNOBS, SHOW_KNOBS, SHOW_KNOBS };
+        int row_showing[] = {SHOW_VARS_PARTS, SHOW_RACKS_SONGS, SHOW_BUTTONS, SHOW_BUTTONS, SHOW_KNOBS, SHOW_KNOBS, SHOW_KNOBS, SHOW_KNOBS };
         uint8_t midi_commands[] = {MIDI_CC_00, MIDI_CC_00, MIDI_CC_00, MIDI_CC_00, MIDI_CC_00, MIDI_CC_00, MIDI_CC_00, MIDI_CC_00 };
 		// uint8_t first_midi[] = { MCX_BUTTON_B1, MCX_BUTTON_T1, MCX_BUTTON_B2, MCX_BUTTON_T2, 22, 23, 24, 25 };
 		// int row_columns[] = { 4, 4, 4, 4, 1, 1, 1, 1 };

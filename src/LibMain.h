@@ -23,7 +23,7 @@
 const std::string XMLProductDescription =   
      // Replace with your information            
     "<Library>" 
-    "<Product Name=\"MC8 Extension\" Version=\"1.1\" BuildDate=\"6/21/2025\"></Product> "
+    "<Product Name=\"MC8 Extension\" Version=\"1.2\" BuildDate=\"12/27/2025\"></Product> "
     "<Description>Control Integration for Morningstar MC Controllers</Description>"
     "</Library>"; 
 
@@ -75,6 +75,8 @@ public:
     void SendTextToMCx(std::string text, uint8_t op2, uint8_t op3, uint8_t op4);
     void PresetShortName(std::string text, uint8_t position);
     void PresetToggleName(std::string text, uint8_t position);
+    bool ExecuteSpecialName(SurfaceWidget widget);
+    bool ReplaceSpecialName(SurfaceWidget& widget);
 
     void UpdatePresetMessage(uint8_t preset, uint8_t msgnum, uint8_t msgtype, uint8_t savetomem, uint8_t action, uint8_t toggle, uint8_t ccnum, uint8_t ccval, uint8_t midichan);
 
@@ -243,6 +245,8 @@ public:
             registerCallback("OnMidiIn");
 
             SetMidiInOutDevices();
+            TogglePage(0); // go to first page
+
 
             // We look for this INITIAL_CONFIG widget one time when the gig has finished loading
             // if this is the only row configuration widget used then changes made during use will persist through rackspace changes
@@ -323,7 +327,7 @@ public:
             scriptLog(deviceName, 1); */
 
             ProcessButton(data[1], data[2]);  // it's a button press
-            EngagePreset(32, 1);
+            // EngagePreset(32, 1);
         }
         else if (IsKnob(data, length))
         {
@@ -512,23 +516,23 @@ public:
 
             if (inSetlistMode() == true)
             {
+                if (Surface.Color) EngagePreset(33, 2); // this is what we have to do to change the Pro color pallette (for now)
                 CurrentBankName(getSongName(getCurrentSongIndex()));
                 LongPresetNames(getSongpartName(getCurrentSongIndex(), getCurrentSongpartIndex()));
                 DisplayRefresh(true);  // force display of rackspaces/songs/variations/songparts to include current
-                if (Surface.Color) EngagePreset(33, 2); // this is what we have to do to change the Pro color pallette (for now)
             }
             else
             {
+                if (Surface.Color) EngagePreset(33, 1);
                 CurrentBankName(getRackspaceName(getCurrentRackspaceIndex()));
                 LongPresetNames(getVariationName(getCurrentRackspaceIndex(), getCurrentVariationIndex()));
                 // scriptLog("OnRackspaceActivated: GetCurrentVariation says " + getVariationName(getCurrentRackspaceIndex(), getCurrentVariationIndex()), 0);
 
                 DisplayRefresh(true); // force display of rackspaces/songs/variations/songparts to include current
-                if (Surface.Color) EngagePreset(33, 1);
             }
 
 			// set the longpresetname for the current variation or songpart
-            EngagePreset(32, 1);
+            // EngagePreset(32, 1);
         }
     }
 
@@ -548,10 +552,10 @@ public:
         setActiveBank(Surface.Row[B2_ROW]);
         setActiveBank(Surface.Row[T2_ROW]);
 
-        LongPresetNames(getVariationName(getCurrentRackspaceIndex(), newIndex));
+        if (!inSetlistMode()) LongPresetNames(getVariationName(getCurrentRackspaceIndex(), newIndex));
 
         DisplayRefresh(true); // force display to include current rack/variation
-        EngagePreset(32, 1); // we store the current variation name in preset 22's LongPresetName slot (and CC to engage is preset + 10)
+        // EngagePreset(32, 1); // we store the current variation name in preset 22's LongPresetName slot (and CC to engage is preset + 10)
 
         // Notify("Variation: " + newIndex);
     }
@@ -560,6 +564,7 @@ public:
     {
         // scriptLog("Songpart Changed", 1);
         LongPresetNames(getSongpartName(getCurrentSongIndex(), newIndex));
+        // EngagePreset(32, 1); // we store the current variation name in preset 22's LongPresetName slot (and CC to engage is preset + 10)
     }
 
 
@@ -567,26 +572,6 @@ public:
     void OnMidiDeviceListChanged(std::vector< std::string>& inputs, std::vector< std::string>& outputs) override
     {
         bool disconnected = Surface.syncState == 0;  // we were not connected heading into this callback
-
-        /*for (int i = 0; i < getMidiOutDeviceCount(); i++)
-        {
-            scriptLog("GetMidiOutDeviceName(" + std::to_string(i) + ") = " + getMidiOutDeviceName(i), 0);
-        }
-
-        for (int i = 0; i < outputs.size(); i++)
-        {
-            scriptLog("Output device " + std::to_string(i) + " = " + outputs[i], 0);
-        }
-
-        for (int i = 0; i < getMidiInDeviceCount(); i++)
-        {
-            scriptLog("GetMidiInDeviceName(" + std::to_string(i) + ") = " + getMidiInDeviceName(i), 0);
-        }
-
-        for (int i = 0; i < inputs.size(); i++)
-        {
-            scriptLog("Input device " + std::to_string(i) + " = " + inputs[i], 0);
-        }*/
 
         // if we were not connected and we become connected, initialize and display what's needed,
         // otherwise we do nothing because it was some other device that connected/disconnected
@@ -599,21 +584,21 @@ public:
             // OnRackspaceActivated();  // We call this to set everything up for the current Rackspace
             if (inSetlistMode() == true)
             {
+                if (Surface.Color) EngagePreset(33, 2); // this is what we have to do to change the Pro color pallette (for now)
                 CurrentBankName(getSongName(getCurrentSongIndex()));
                 LongPresetNames(getSongpartName(getCurrentSongIndex(), getCurrentSongpartIndex()));
                 DisplayRefresh(true);  // force display of rackspaces/songs/variations/songparts to include current
-                if (Surface.Color) EngagePreset(33, 2); // this is what we have to do to change the Pro color pallette (for now)
             }
             else
             {
+                if (Surface.Color) EngagePreset(33, 1);
                 CurrentBankName(getRackspaceName(getCurrentRackspaceIndex()));
                 LongPresetNames(getVariationName(getCurrentRackspaceIndex(), getCurrentVariationIndex()));
                 DisplayRefresh(true); // force display of rackspaces/songs/variations/songparts to include current
-                if (Surface.Color) EngagePreset(33, 1);
             }
 
             // set the longpresetname for the current variation or songpart
-            EngagePreset(32, 1);
+            // EngagePreset(32, 1);
         }
 		else if (disconnected) { scriptLog("MCX: devicelist changed but still disconnected", 0); }
     }

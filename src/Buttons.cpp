@@ -158,7 +158,7 @@ void LibMain::DisplayVariations(SurfaceRow & row, uint8_t firstbutton, uint8_t n
         }
         else if (row.WidgetID == TOP_TAG || row.WidgetID == T2_TAG) // if we're on a TOP_ROW and showing same as BOTTOM_ROW
         {
-            if ((row.FirstShown + 2 * Surface.RowLen) >= count) // set to the last page of racks/variations/sons/songparts
+            if ((row.FirstShown + 2 * Surface.RowLen) > count) // set to the last page of racks/variations/sons/songparts
             {
                 row.FirstShown = count - (count % (Surface.RowLen * 2));
             }
@@ -258,6 +258,7 @@ SurfaceWidget LibMain::PopulateWidget(std::string widgetname, double passed_valu
     return widget;
 }
 
+
 SurfaceWidget LibMain::PopulateWidget(std::string widgetname)
 {
     SurfaceWidget widget;
@@ -329,6 +330,9 @@ SurfaceWidget LibMain::PopulateWidget(std::string widgetname)
                     if (widget.Validated)
                     {
                         widget.Colors = Surface.WidgetColors; // set to default widget colors
+                        widget.Colors.LedColor[1] = widget.Colors.LedColor[0] = widget.Colors.closest_index(getWidgetOutlineColor(widgetname));
+                        // widget.Colors.TextColor[1] = widget.Colors.TextColor[0] = widget.Colors.closest_index(getWidgetTextColor(widgetname));
+                        widget.Colors.BackgroundColor[1] = widget.Colors.BackgroundColor[0] = widget.Colors.closest_index(getWidgetFillColor(widgetname));
 
                         // if there is a _[x]p_ widget that takes first priority, e.g. mcx_bp_bank_0
                         // we use this for preset ShortNameOn, ShortNameOff, and LongName
@@ -343,21 +347,28 @@ SurfaceWidget LibMain::PopulateWidget(std::string widgetname)
                             if (name_segments.size() >= 2)
                                 widget.ShortNameOn = name_segments[1];
                             else
-                                widget.ShortNameOn = (std::string) "*" + name_segments[0];
+                            {
+                                if (Surface.Color) widget.ShortNameOn = name_segments[0];
+								else widget.ShortNameOn = (std::string)"*" + name_segments[0]; // add asterisk if no color support
+                            }
                             if (name_segments.size() >= 3)
                                 widget.LongName = name_segments[2];
                             else
                                 widget.LongName = name_segments[0];
 
+                            widget.Colors.LedColor[1] = widget.Colors.LedColor[0] = widget.Colors.closest_index(getWidgetOutlineColor(pwidgetname));
+                            // widget.Colors.TextColor[1] = widget.Colors.TextColor[0] = widget.Colors.closest_index(getWidgetTextColor(pwidgetname));
+                            widget.Colors.BackgroundColor[1] = widget.Colors.BackgroundColor[0] = widget.Colors.closest_index(getWidgetFillColor(pwidgetname));
 
-                            widget.Caption = getWidgetCaption(pwidgetname); // need to stop using this for mcx
+                            widget.Caption = getWidgetCaption(pwidgetname);
                              
                         }
                         else
                         {
-                            // in the absense of an widget specific property widget we'll set short and long names by the caption
+                            // in the absense of a widget specific property widget we'll set short and long names by the caption
                             widget.ShortNameOff = widget.Caption;
-                            widget.ShortNameOn = (std::string)"*" + widget.Caption;
+                            if (Surface.Color) widget.ShortNameOn = widget.Caption;
+                            else widget.ShortNameOn = (std::string)"*" + widget.Caption; // add asterisk if no color support
                             widget.LongName = widget.Caption;
                         }
 
@@ -365,6 +376,13 @@ SurfaceWidget LibMain::PopulateWidget(std::string widgetname)
                         pwidgetname = widget.SurfacePrefix + "_" + widget.WidgetID + "c_" + widget.BankID + "_" + control_number;
                         if (widgetExists(pwidgetname))
                         {
+                            // this line can be removed for in GP6
+                            widget.Colors.TextColor[0] = widget.Colors.TextColor[1] = (uint8_t)std::stoi(gigperformer::sdk::GigPerformerFunctions::getWidgetCaption(pwidgetname)) & 0x7f;
+
+                            widget.Colors.LedColor[1] =  widget.Colors.closest_index(getWidgetOutlineColor(pwidgetname));
+                            // widget.Colors.TextColor[1] =  widget.Colors.closest_index(getWidgetTextColor(pwidgetname));
+                            widget.Colors.BackgroundColor[1] = widget.Colors.closest_index(getWidgetFillColor(pwidgetname));
+
                             name_segments = ParseWidgetName(getWidgetCaption(pwidgetname), '_');
 
                             if (name_segments.size() >= 6)

@@ -94,6 +94,11 @@
 #define MCX_COLOR_WIDGET_SELECTED "mcx_color_widget_selected"
 #define MCX_COLOR_WIDGET_UNSELECTED "mcx_color_widget_unselected"
 
+#define MCX_NEXT_SONG_CAPTION "[nextsong]"
+#define MCX_PREV_SONG_CAPTION "[prevsong]"
+#define MCX_NEXT_SONGPART_CAPTION "[nextsongpart]"
+#define MCX_PREV_SONGPART_CAPTION "[prevsongpart]"
+
 #define MCX_DEFAULT_BACKGROUND 0
 #define MCX_DEFAULT_LED 0xffffff
 #define MCX_DEFAULT_TEXT 0xffffff

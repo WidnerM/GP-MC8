@@ -318,6 +318,12 @@ void LibMain::ToggleButton(uint8_t button)
         {
             widgetname = Surface.Row[row].WidgetPrefix + (std::string) "_" +
                          Surface.Row[row].BankIDs[Surface.Row[row].ActiveBank] + "_" + std::to_string(x);
+
+			SurfaceWidget widget = PopulateWidget(widgetname);
+
+            if (ExecuteSpecialName(widget) == true)
+				return;
+
             newValue = getWidgetValue(widgetname);
 
             // scriptLog("Toggling: " + widgetname + ", was " + std::to_string(newValue), 1);
