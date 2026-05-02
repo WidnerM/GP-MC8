@@ -35,7 +35,7 @@ jobs:
             - name: Checkout
               uses: actions/checkout@v6
             - name: "Ccache"
-              uses: hendrikmuhs/ccache-action@5ebbd400eff9e74630f759d94ddd7b6c26299639 # v1.2.20
+              uses: hendrikmuhs/ccache-action@33522472633dbd32578e909b315f5ee43ba878ce # v1.2.22
               if: env.CCACHE_AVAILABLE == 'true'
               with:
                   key: ${{ matrix.config.os }}-${{ matrix.config.cmake_preset }}
@@ -57,7 +57,7 @@ jobs:
             - name: "CMake: Install"
               run: cmake --install build/${{ matrix.config.cmake_preset }} --config ${{ matrix.config.build_config }}
             - name: Store extension
-              uses: actions/upload-artifact@v6
+              uses: actions/upload-artifact@v7
               with:
                   name: ${{ github.event.repository.name }}-${{ matrix.config.cmake_preset }}
                   path: build/install
