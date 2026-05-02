@@ -4,6 +4,8 @@
 // #include <interfaces/CPP/GPUtils.h>
 // #include <interfaces/CPP/GPMidiMessages.h>
 
+#include <cstddef>
+
 #include "gigperformer/sdk/GPMidiMessages.h"
 #include "gigperformer/sdk/GPUtils.h"
 #include "gigperformer/sdk/GigPerformerAPI.h"
@@ -15,22 +17,41 @@
 #include <string>
 #include <regex>
 
+#include <cereal/types/string.hpp>
+#include <cereal/types/unordered_map.hpp>
+#include <cereal/types/memory.hpp>
+#include <cereal/archives/binary.hpp>
+
+#include <juce_core/juce_core.h>
+#include <juce_graphics/juce_graphics.h>
+#include <juce_gui_basics/juce_gui_basics.h>
+#include <juce_gui_extra/juce_gui_extra.h>
+#include <juce_osc/juce_osc.h>
+
+#include "juceOSC.h"
+
 #include "MC8_Classes.h"
 #include "General_Utils.h"
 
+#include "Version.h"
 
 // define an XML string describing your product
-const std::string XMLProductDescription =   
-     // Replace with your information            
-    "<Library>" 
-    "<Product Name=\"MC8 Extension\" Version=\"1.2\" BuildDate=\"12/27/2025\"></Product> "
-    "<Description>Control Integration for Morningstar MC Controllers</Description>"
-    "</Library>"; 
+const std::string XMLProductDescription = "<Library>"
+"<Product Name=\"" +
+PROJECT_TITLE + "\" Version=\"" + PROJECT_VERSION + "\" BuildDate=\"" +
+PROJECT_BUILD_DATE +
+"\"></Product>"
+"<Description>" +
+PROJECT_DESCRIPTION +
+"</Description>"
+"<ImagePath></ImagePath>"
+"</Library>";
 
 
 // Define your class here - it MUST be called LibMain and it must inherit from GigPerformerAPI
 
-class LibMain : public gigperformer::sdk::GigPerformerAPI
+class LibMain : public gigperformer::sdk::GigPerformerAPI //, public juce::Component, public juce::OSCReceiver,
+     // public juce::OSCReceiver::Listener<juce::OSCReceiver::MessageLoopCallback>
 {
 protected:
     int GetPanelCount() override;
@@ -46,6 +67,8 @@ public:
     // These must be here but no need to do anything unless you want extra behavior
     LibMain(LibraryHandle handle) : GigPerformerAPI(handle)  {}
     virtual ~LibMain() {}
+
+    // virtual void juce::OSCReceiver::Listener<juce::OSCReceiver::MessageLoopCallback>::oscMessageReceived(const juce::OSCMessage& message) override;
 
     //  Global declarations and initializations
     //  [Global to the LibMain class, that is]
@@ -65,6 +88,7 @@ public:
     void sendMidiMessage(const uint8_t* MidiMessage, int length);
     void SetSurfaceLayout(std::string config);
     void ShowState();
+    void ProcessOSC(juce::OSCMessage message);
 
     // from Display.cpp - functions for displaying things on the MC8 display
     uint8_t calculateMCChecksum(uint16_t len, uint8_t *ptr);
@@ -109,7 +133,7 @@ public:
 
     // from Inputs.cpp
     void ProcessButton(uint8_t button, uint8_t value);
-    void ToggleButton(uint8_t button);
+    void ToggleButton(uint8_t button, uint8_t value);
     void ProcessKnob(uint8_t row, uint8_t value);
 
     bool IsKnob(const uint8_t* data, int length);
@@ -128,6 +152,10 @@ public:
 
     SurfaceWidget PopulateWidget(std::string widgetname);
     SurfaceWidget PopulateWidget(std::string widgetname, double passed_value);
+    uint8_t GetWidgetTextColor(std::string offwidget);
+
+    juce::OSCSender MCxOSCSender;
+    AnOSCReceiver MCxOSCReceiver;
 
     // General routines we define before the varoius callbacks
 
@@ -186,6 +214,7 @@ public:
                         else if (name.find("MC8") != std::string::npos) { SetSurfaceLayout("mc8"); }
                         else if (name.find("MC6 Pro") != std::string::npos) { SetSurfaceLayout("mc6 pro"); }
                         else if (name.find("MC6") != std::string::npos) { SetSurfaceLayout("mc6"); }
+                        else if (name.find("MC4 Pro") != std::string::npos) { SetSurfaceLayout("mc4 pro"); }
                         Surface.OutputDevice = name;
                         scriptLog("MCX:  Using midi out " + name, 0);
                     }
@@ -201,6 +230,7 @@ public:
                         else if (name.find("MC8") != std::string::npos) { SetSurfaceLayout("mc8"); }
                         else if (name.find("MC6 Pro") != std::string::npos) { SetSurfaceLayout("mc6 pro"); }
                         else if (name.find("MC6") != std::string::npos) { SetSurfaceLayout("mc6"); }
+                        else if (name.find("MC4 Pro") != std::string::npos) { SetSurfaceLayout("mc4 pro"); }
                         Surface.OutputDevice = name;
                         scriptLog("MCX:  Using midi out " + name, 0);
                     }
@@ -303,6 +333,7 @@ public:
                 && widget.Column < Surface.RowLen)
             {
                 DisplayWidgetValue(Surface.Row[widget.RowNumber], widget);
+                EngagePreset(Surface.LongNamePreset, 1);
                 // DisplayPresetLongname(Surface.Row[widget.RowNumber], widget.Column, widget.LongName + widget.TextValue);
             }        
         }
@@ -365,7 +396,7 @@ public:
         if (mode == 1)
         {
             // scriptLog("Entered setlist mode.", 1);
-            if (Surface.Color) EngagePreset(33, 2); // screen background color is triggerd on preset 33
+            if (Surface.Color) EngagePreset(Surface.ColorsPreset, 2); // screen background color is triggerd on preset 33
             CurrentBankName(getSongName(getCurrentSongIndex()));
             LongPresetNames(getSongpartName(getCurrentSongIndex(), getCurrentSongpartIndex()));
             DisplayRefresh();
@@ -373,7 +404,7 @@ public:
         else
         {
             // scriptLog("Entered rackspace mode.", 1);
-            if (Surface.Color) EngagePreset(33, 1);
+            if (Surface.Color) EngagePreset(Surface.ColorsPreset, 1);
             CurrentBankName(getRackspaceName(getCurrentRackspaceIndex()));
             LongPresetNames(getVariationName(getCurrentRackspaceIndex(), getCurrentVariationIndex()));
             DisplayRefresh();
@@ -461,9 +492,9 @@ public:
 
         // scriptLog("Rackspace Changed to " + std::to_string(getCurrentRackspaceIndex()), 1);
 
-        if (Surface.LastRackspace != getCurrentRackspaceIndex()) // this is here because OnRackspaceActivated can get called multiple times in a row
+        if (Surface.LastRackspaceUuid != getRackspaceUuid(getCurrentRackspaceIndex())) // this is here because OnRackspaceActivated can get called multiple times in a row
         {
-            Surface.LastRackspace = getCurrentRackspaceIndex();
+            Surface.LastRackspaceUuid = getRackspaceUuid(getCurrentRackspaceIndex());
             // Clear the BankIDs and active bank data from the prior rackspace's widget set
             for (row = 0; row < std::size(Surface.Row); row++)
             {
@@ -514,26 +545,27 @@ public:
             setActiveBank(Surface.Row[E4_ROW]);
             DisplayRow(Surface.Row[E4_ROW]);
 
-            if (inSetlistMode() == true)
-            {
-                if (Surface.Color) EngagePreset(33, 2); // this is what we have to do to change the Pro color pallette (for now)
-                CurrentBankName(getSongName(getCurrentSongIndex()));
-                LongPresetNames(getSongpartName(getCurrentSongIndex(), getCurrentSongpartIndex()));
-                DisplayRefresh(true);  // force display of rackspaces/songs/variations/songparts to include current
-            }
-            else
-            {
-                if (Surface.Color) EngagePreset(33, 1);
-                CurrentBankName(getRackspaceName(getCurrentRackspaceIndex()));
-                LongPresetNames(getVariationName(getCurrentRackspaceIndex(), getCurrentVariationIndex()));
-                // scriptLog("OnRackspaceActivated: GetCurrentVariation says " + getVariationName(getCurrentRackspaceIndex(), getCurrentVariationIndex()), 0);
-
-                DisplayRefresh(true); // force display of rackspaces/songs/variations/songparts to include current
-            }
+			DisplayRefresh(true); // force display to include current rack/variation
 
 			// set the longpresetname for the current variation or songpart
             // EngagePreset(32, 1);
         }
+        
+        if (inSetlistMode() == true)
+        {
+            if (Surface.Color) EngagePreset(Surface.ColorsPreset, 2); // this is what we have to do to change the Pro color pallette (for now)
+            CurrentBankName(getSongName(getCurrentSongIndex()));
+            LongPresetNames(getSongpartName(getCurrentSongIndex(), getCurrentSongpartIndex()));
+        }
+        else
+        {
+            if (Surface.Color) EngagePreset(Surface.ColorsPreset, 1);
+            CurrentBankName(getRackspaceName(getCurrentRackspaceIndex()));
+            LongPresetNames(getVariationName(getCurrentRackspaceIndex(), getCurrentVariationIndex()));
+            // scriptLog("OnRackspaceActivated: GetCurrentVariation says " + getVariationName(getCurrentRackspaceIndex(), getCurrentVariationIndex()), 0);
+        }
+
+		if (Surface.LastVariation < 0) DisplayRefresh(true); // first time in we need to force a full redisplay
     }
 
 
@@ -541,23 +573,28 @@ public:
     void OnVariationChanged(int oldIndex, int newIndex) override
     {
         // scriptLog("Variation Changed from " + std::to_string(oldIndex) + " to " + std::to_string(newIndex) + "; GetCurrentVariation says " + std::to_string(getCurrentVariationIndex()), 0);
+		if (!((getRackspaceUuid(getCurrentRackspaceIndex()) == Surface.LastRackspaceUuid) &&
+            getCurrentVariationIndex() == Surface.LastVariation ))
+        {
+            //if (Surface.BottomMode == SHOW_VARIATIONS) { DisplayBottom(true); }
+			Surface.LastRackspaceUuid = getRackspaceUuid(getCurrentRackspaceIndex());
+			Surface.LastVariation = getCurrentVariationIndex();
 
-        //if (Surface.BottomMode == SHOW_VARIATIONS) { DisplayBottom(true); }
-        
-        // setActiveBank(Surface.Row[KNOB_ROW]);
-        // DisplayRow(Surface.Row[KNOB_ROW]);
+            // setActiveBank(Surface.Row[KNOB_ROW]);
+            // DisplayRow(Surface.Row[KNOB_ROW]);
 
-        setActiveBank(Surface.Row[BOTTOM_ROW]);
-        setActiveBank(Surface.Row[TOP_ROW]);
-        setActiveBank(Surface.Row[B2_ROW]);
-        setActiveBank(Surface.Row[T2_ROW]);
+            setActiveBank(Surface.Row[BOTTOM_ROW]);
+            setActiveBank(Surface.Row[TOP_ROW]);
+            setActiveBank(Surface.Row[B2_ROW]);
+            setActiveBank(Surface.Row[T2_ROW]);
 
-        if (!inSetlistMode()) LongPresetNames(getVariationName(getCurrentRackspaceIndex(), newIndex));
+            if (!inSetlistMode()) LongPresetNames(getVariationName(getCurrentRackspaceIndex(), newIndex));
 
-        DisplayRefresh(true); // force display to include current rack/variation
-        // EngagePreset(32, 1); // we store the current variation name in preset 22's LongPresetName slot (and CC to engage is preset + 10)
+            DisplayRefresh(true); // force display to include current rack/variation
+            EngagePreset(Surface.LongNamePreset, 1); // we store the current variation name in preset 22's LongPresetName slot (and CC to engage is preset + 10)
 
-        // Notify("Variation: " + newIndex);
+            // Notify("Variation: " + newIndex);
+        }
     }
 
     void OnSongPartChanged(int oldIndex, int newIndex) override
@@ -584,14 +621,14 @@ public:
             // OnRackspaceActivated();  // We call this to set everything up for the current Rackspace
             if (inSetlistMode() == true)
             {
-                if (Surface.Color) EngagePreset(33, 2); // this is what we have to do to change the Pro color pallette (for now)
+                if (Surface.Color) EngagePreset(Surface.ColorsPreset, 2); // this is what we have to do to change the Pro color pallette (for now)
                 CurrentBankName(getSongName(getCurrentSongIndex()));
                 LongPresetNames(getSongpartName(getCurrentSongIndex(), getCurrentSongpartIndex()));
                 DisplayRefresh(true);  // force display of rackspaces/songs/variations/songparts to include current
             }
             else
             {
-                if (Surface.Color) EngagePreset(33, 1);
+                if (Surface.Color) EngagePreset(Surface.ColorsPreset, 1);
                 CurrentBankName(getRackspaceName(getCurrentRackspaceIndex()));
                 LongPresetNames(getVariationName(getCurrentRackspaceIndex(), getCurrentVariationIndex()));
                 DisplayRefresh(true); // force display of rackspaces/songs/variations/songparts to include current
@@ -610,6 +647,14 @@ public:
         // scriptLog("OnOpen called.", 1);
         Surface.Initialize();
 
+		// initialize juce OSC stuff
+        juce::MessageManager::getInstance()->callAsync([]() {});
+
+        MCxOSCSender.connect("127.0.0.1", 11110); // 32123 is Song Master's default OSC port
+        MCxOSCSender.send("/extension/SongMaster/Test", (float)1.5);
+
+        if (!MCxOSCReceiver.connectToPort(11111)) // 54321 is our receive port
+            scriptLog("Could not connect to OSC receive port.", 1);
     }
 
     // Called when shutting down
@@ -621,13 +666,17 @@ public:
         ClearDisplayRow(Surface.Row[TOP_ROW]);
         ClearDisplayRow(Surface.Row[B2_ROW]);
         ClearDisplayRow(Surface.Row[T2_ROW]);
-        if (Surface.Color) { EngagePreset(33, 3); CurrentBankName("GigPerformer\\nExtension");}
+        if (Surface.Color) { EngagePreset(Surface.ColorsPreset, 3); CurrentBankName("GigPerformer\\nExtension");}
         else CurrentBankName("GigPerformer Extension");
         LongPresetNames("");
         if (Surface.Page == 1) {
             TogglePage(0); // go back to first page on exit
         }
 
+        // clean up juce OSC stuff
+        MCxOSCSender.disconnect();
+        MCxOSCReceiver.disconnect();
+        juce::MessageManager::deleteInstance();
     }
 
     // Initialization of the dll plugin

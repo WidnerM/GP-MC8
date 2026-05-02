@@ -6,6 +6,10 @@
 #include "gigperformer/sdk/GigPerformerFunctions.h"
 #include "gigperformer/sdk/types.h"
 
+#include <cereal/types/unordered_map.hpp>
+#include <cereal/types/memory.hpp>
+#include <cereal/archives/binary.hpp>
+
 #include "MC8_Constructs.h"
 #include "MC8_Colors.h"
 #include "MC8_Buttons.h"
@@ -105,6 +109,19 @@ public:
 		return bestindex;
 	}
 
+	uint32_t toRGB(uint8_t index)
+	{
+		int colors[] = MC8_COLOR_ARRAY;
+		if (index < sizeof(colors) / sizeof(colors[0]))
+		{
+			return colors[index];
+		}
+		else
+		{
+			return 0;
+		}
+	}
+
 	void makeBlank()
 	{
 		LedColor[0] = 49; LedColor[1] = 49; LedColor[2] = 49;
@@ -147,6 +164,15 @@ public:
 		TextColor[0] = 11; TextColor[1] = 27; TextColor[2] = 48;
 		BackgroundColor[0] = 49; BackgroundColor[1] = 49; BackgroundColor[2] = 49;
 	}
+
+	// Serialization function for saving/loading color settings
+	template <class Archive>
+	void serialize(Archive& archive)
+	{
+		archive(LedColor, TextColor, BackgroundColor);
+	}
+
+
 };
 
 // The SurfaceWidget class is the conduit used for translating GP widget information and changes to control surface display controller_widgettype_bankname_position
@@ -163,6 +189,7 @@ public:
 	bool Validated = false;  // user may create widgets not on the surface or in banks that don't yet exist - this simplifies detection and crash avoidance
 	bool IsSurfaceItemWidget = false;  // indicates the widget maps to a physical surface control
 	bool IsRowParameterWidget = false;  // things like names or resolutions on GP widgets that don't correspond to physical surface controls
+	bool IsMomentary = false;  // indicates if the widget is set to momentary behavior
 
 	int RowNumber = -1;  // If this widget is associated with a Row, used primarily to determine if it's the active bank or not
 
@@ -309,13 +336,16 @@ public:
 	uint8_t RowLen = MC8_ROWLEN; // mc8 = 4, mc6 pro = 3
 	uint8_t ShortNameLen = MC8_SHORTLEN; // mc8 = 10, mc6 pro = 32
 	uint8_t LongNameLen = MC8_LONGLEN;  // mc8 = 24, mc6 pro = 32
+	uint8_t LongNamePreset = MC8PRO_LONGNAME_PRESET;
+	uint8_t ColorsPreset = MC8PRO_COLOR_PRESET;
 	bool Color = MC8_COLOR;
 	std::string SysexPrefix = MC8_PREFIX;
 	MC8Color RackColors, VariationColors, WidgetColors, SongColors, SongpartColors;
 
 	uint8_t Page = 0;
 
-	int LastRackspace = -1;
+	std::string LastRackspaceUuid = "";
+	int LastVariation = -1;
 	int syncState = 0;  // are our midi in and out connected to the device
 	std::string InputDevice = "";
 	std::string OutputDevice = "";
@@ -324,7 +354,8 @@ public:
 	bool Initialize()
 	{
 		int x;
-		LastRackspace = -1;
+		LastRackspaceUuid = "";
+		LastVariation = -1;
 		std::string row_prefixes[] = ROW_PREFIX_ARRAY;
 		std::string row_tags[] = TAG_ARRAY;
 		std::string row_types[] = ROW_TYPE_ARRAY;
@@ -440,7 +471,7 @@ public:
 		gigperformer::sdk::GPMidiMessage message;
 
 		// build 16 byte MC prefix + payload + append the 00 f7 into a GPMidiMessage
-		message = gigperformer::sdk::GPMidiMessage(SysexPrefix + MC8_COLOR_PAYLOAD + "00 f7");
+		message = gigperformer::sdk::GPMidiMessage(SysexPrefix + MCPRO_COLOR_PAYLOAD + "00 f7");
 		// scriptLog(textmessage, 1);
 
 		// set opcodes
@@ -452,9 +483,9 @@ public:
 
 		for (int i = 0; i < 3; i++)
 		{
-			message.setValue(MC8_POS_COLOR_LEDS + i, colors.LedColor[i]);
-			message.setValue(MC8_POS_COLOR_TEXT + i, colors.TextColor[i]);
-			message.setValue(MC8_POS_COLOR_BACK + i, colors.BackgroundColor[i]);
+			message.setValue(MCPRO_POS_COLOR_LEDS + i, colors.LedColor[i]);
+			message.setValue(MCPRO_POS_COLOR_TEXT + i, colors.TextColor[i]);
+			message.setValue(MCPRO_POS_COLOR_BACK + i, colors.BackgroundColor[i]);
 		}
 
 		// calculate and place checksum
@@ -463,6 +494,120 @@ public:
 		return message;
 	}
 
+	std::string MakeColorStateString()
+	{
+		std::string archive_string;
+		{
+			std::ostringstream os;
+			cereal::BinaryOutputArchive archive(os);
+			archive(RackColors, VariationColors, WidgetColors, SongColors, SongpartColors);
+			archive_string = os.str();
+		}
+		return archive_string;
+	}
+
+	bool LoadColorStateString(std::string archive_string)
+	{
+		try
+		{
+			std::istringstream is(archive_string);
+			{
+				cereal::BinaryInputArchive archive(is);
+				archive(RackColors, VariationColors, WidgetColors, SongColors, SongpartColors);
+			}
+		}
+		catch (...)
+		{
+			return false;
+		}
+		return true;
+	}
+
+	gigperformer::sdk::GPMidiMessage MakeLoadPresetMessage(uint8_t preset, uint8_t colors[4])
+	{
+		const int colorpositions[] = { 28, 29, 54, 55 };
+		gigperformer::sdk::GPMidiMessage message;
+
+		const std::string hexmessage = "f0 00 21 24 09 00 06 11 00 0e 00 00 00 00 00 00"
+			"7f 00 03 01 0e 00 7f 01 17 00 24 07 2c 2f 01 01"
+			"02 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+			"7f 01 17 01 24 07 36 07 01 02 02 00 00 00 00 00"
+			"00 00 00 00 00 00 00 00 00 00 7f 01 17 02 24 07"
+			"00 07 01 03 02 00 00 00 00 00 00 00 00 00 00 00"
+			"00 00 00 00 7f 01 17 03 0e 03 00 00 01 07 02 00"
+			"00 00 00 00 00 00 00 00 00 00 00 00 00 00 7f 01"
+			"17 04 0e 04 00 00 01 08 02 00 00 00 00 00 00 00"
+			"00 00 00 00 00 00 00 00 7f 01 17 05 00 00 00 00"
+			"01 00 02 00 00 00 00 00 00 00 00 00 00 00 00 00"
+			"00 00 7f 01 17 06 00 00 00 00 01 00 02 00 00 00"
+			"00 00 00 00 00 00 00 00 00 00 00 00 7f 01 17 07"
+			"00 00 00 00 01 00 02 00 00 00 00 00 00 00 00 00"
+			"00 00 00 00 00 00 7f 01 17 08 00 00 00 00 01 00"
+			"02 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+			"7f 01 17 09 00 00 00 00 01 00 02 00 00 00 00 00"
+			"00 00 00 00 00 00 00 00 00 00 7f 01 17 0a 00 00"
+			"00 00 01 00 02 00 00 00 00 00 00 00 00 00 00 00"
+			"00 00 00 00 7f 01 17 0b 00 00 00 00 01 00 02 00"
+			"00 00 00 00 00 00 00 00 00 00 00 00 00 00 7f 01"
+			"17 0c 00 00 00 00 01 00 02 00 00 00 00 00 00 00"
+			"00 00 00 00 00 00 00 00 7f 01 17 0d 00 00 00 00"
+			"01 00 02 00 00 00 00 00 00 00 00 00 00 00 00 00"
+			"00 00 7f 01 17 0e 00 00 00 00 01 00 02 00 00 00"
+			"00 00 00 00 00 00 00 00 00 00 00 00 7f 01 17 0f"
+			"00 00 00 00 01 00 02 00 00 00 00 00 00 00 00 00"
+			"00 00 00 00 00 00 7f 01 17 10 00 00 00 00 01 00"
+			"02 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+			"7f 01 17 11 00 00 00 00 01 00 02 00 00 00 00 00"
+			"00 00 00 00 00 00 00 00 00 00 7f 01 17 12 00 00"
+			"00 00 01 00 02 00 00 00 00 00 00 00 00 00 00 00"
+			"00 00 00 00 7f 01 17 13 00 00 00 00 01 00 02 00"
+			"00 00 00 00 00 00 00 00 00 00 00 00 00 00 7f 01"
+			"17 14 00 00 00 00 01 00 02 00 00 00 00 00 00 00"
+			"00 00 00 00 00 00 00 00 7f 01 17 15 00 00 00 00"
+			"01 00 02 00 00 00 00 00 00 00 00 00 00 00 00 00"
+			"00 00 7f 01 17 16 00 00 00 00 01 00 02 00 00 00"
+			"00 00 00 00 00 00 00 00 00 00 00 00 7f 01 17 17"
+			"00 00 00 00 01 00 02 00 00 00 00 00 00 00 00 00"
+			"00 00 00 00 00 00 7f 01 17 18 00 00 00 00 01 00"
+			"02 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+			"7f 01 17 19 00 00 00 00 01 00 02 00 00 00 00 00"
+			"00 00 00 00 00 00 00 00 00 00 7f 01 17 1a 00 00"
+			"00 00 01 00 02 00 00 00 00 00 00 00 00 00 00 00"
+			"00 00 00 00 7f 01 17 1b 00 00 00 00 01 00 02 00"
+			"00 00 00 00 00 00 00 00 00 00 00 00 00 00 7f 01"
+			"17 1c 00 00 00 00 01 00 02 00 00 00 00 00 00 00"
+			"00 00 00 00 00 00 00 00 7f 01 17 1d 00 00 00 00"
+			"01 00 02 00 00 00 00 00 00 00 00 00 00 00 00 00"
+			"00 00 7f 01 17 1e 00 00 00 00 01 00 02 00 00 00"
+			"00 00 00 00 00 00 00 00 00 00 00 00 7f 01 17 1f"
+			"00 00 00 00 01 00 02 00 00 00 00 00 00 00 00 00"
+			"00 00 00 00 00 00 7f 02 20 45 4d 50 54 59 20 20"
+			"20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20"
+			"20 20 20 20 20 20 20 20 20 7f 03 20 20 20 20 20"
+			"20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20"
+			"20 20 20 20 20 20 20 20 20 20 20 20 7f 04 20 23"
+			"23 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20"
+			"20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 7f"
+			"05 20 00 00 00 00 00 00 00 00 07 07 07 00 00 00"
+			"00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+			"00 7f 06 20 20 20 20 20 20 20 20 20 20 20 20 20"
+			"20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20"
+			"20 20 20 20 23 f7";
+
+		// build 16 byte MC prefix + payload + append the 00 f7 into a GPMidiMessage
+		message = gigperformer::sdk::GPMidiMessage(hexmessage);
+
+		// set colors
+		for (int i = 0; i < 4; i++)
+			{
+			message.setValue(colorpositions[i], colors[i]);
+		}
+		// calculate and place checksum
+		message.setValue(message.length() - 2,
+			(uint8_t)calculateChecksum(message.length(), message.asBytes()));
+
+		return message;
+	}
 
 private:
 	// Calculate the checksum required on all MCx messages

@@ -6,27 +6,20 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Let's choose a name and version for the extension. Change the name to your
 # liking. The version should be a string like "1.0".
-set(PROJECT_NAME "GP-MC8") # Change this to your liking
-project(${PROJECT_NAME} VERSION 1.0.0)
+set(PROJECT_NAME "GP-MC8") 
+set (PROJECT_VERSION "1.0.0")
+set (PROJECT_TITLE "Morningstar MCx")
+set (PROJECT_DESCR "GP Extension for Morningstar foot controllers")
+string(TIMESTAMP TODAY "%d/%m/%Y")
+set (PROJECT_BUILD_DATE ${TODAY})
+project(${PROJECT_NAME} VERSION ${PROJECT_VERSION})
+
+include("${CMAKE_CURRENT_LIST_DIR}/cmake/dependencies.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/cmake/juce-shared-library.cmake")
+
+configure_file (${CMAKE_CURRENT_SOURCE_DIR}/cmake/version.h.in ${CMAKE_CURRENT_SOURCE_DIR}/src/Version.h @ONLY)
 
 
-# Import the SDK
-include(FetchContent)
-FetchContent_Declare(
-  gp-sdk
-  GIT_REPOSITORY https://github.com/gigperformer/gp-sdk.git
-  # GIT_TAG a50f8e4a2ce3ce6a7599beac307804a62649eb33 # v44
-  # GIT_TAG 3d4fa49c3d6f96851961893ce51896b4450e59ae # v46
-  # GIT_TAG 23c6583ff0137a620a421f6378bb2f6fc761de61 # 50
-  # GIT_TAG 383ca00e99972fbedd9e71ae4d342a658de273c1 # 51
-  # GIT_TAG 897b3452b99f2d7fc02502d0c90d89cd54b51c7e
-  # GIT_TAG 26bc1ed2568b94e1c95ca2348f03afcbb0d8fb16 # 4.7 release
-  GIT_TAG 756ecd249f1ff00f3d3a5955769408f74c9fa453 # SDK 60
-  # GIT_REPOSITORY https://github.com/WidnerM/gp-sdk.git
-  # GIT_TAG 1e62325f8ec5b36a94f3cfe0b5395f325e149479
-
-)
-FetchContent_MakeAvailable(gp-sdk)
 
 # Define our library including sources, include directories and dependencies
 add_library(${PROJECT_NAME} SHARED)
@@ -38,12 +31,21 @@ target_sources(
                           "${CMAKE_CURRENT_LIST_DIR}/src/Knobs.cpp"
                           "${CMAKE_CURRENT_LIST_DIR}/src/Buttons.cpp"
                           "${CMAKE_CURRENT_LIST_DIR}/src/MC8_Classes.h"
+                          "${CMAKE_CURRENT_LIST_DIR}/src/juceOSC.cpp"
                           "${CMAKE_CURRENT_LIST_DIR}/src/General_Utils.cpp")
 
-target_link_libraries(${PROJECT_NAME} PRIVATE gigperformer::sdk::cpp)
+target_link_libraries(${PROJECT_NAME} PRIVATE gigperformer::sdk::cpp juce::juce_gui_basics
+                          juce::juce_core juce::juce_events juce::juce_graphics
+                          juce::juce_osc)
 
 target_include_directories(${PROJECT_NAME}
                            PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+
+target_include_directories(${PROJECT_NAME} PUBLIC /Code/Repos/cereal/include)
+
+target_compile_definitions(
+  ${PROJECT_NAME} PRIVATE "JUCER_ENABLE_GPL_MODE=1"
+                          "JUCE_DISPLAY_SPLASH_SCREEN=0")
 
 # Language options: this will be a pure C++20 project
 set_target_properties(

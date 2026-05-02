@@ -5,8 +5,20 @@
 #include <sstream>
 #include "LibMain.h"
 
+/// ProcessButton is called from OnMidiIn when a MIDI message is received
+///     
+/// <param name="button">midi CC or note number</param>
+/// <param name="value">value, generally 0 or 127</param>
 void LibMain::ProcessButton(uint8_t button, uint8_t value)  // processes a midi button press
 {
+    // this will capture releases of the primary buttons, which we only care about if it's linked to
+	// a widget and the widget is set for momentary behavior
+    if (value == 0 && button <= 15)
+    {
+        ToggleButton(button, value);
+        return;
+    }
+
     if (value == 127 && button <= 0x3f) // only process button down
     {
         // this is set up so that low 2 bits are switch position (0-3), next two are row (0-3)
@@ -31,7 +43,7 @@ void LibMain::ProcessButton(uint8_t button, uint8_t value)  // processes a midi 
         }
         else if (button <= 15 ) // this will capture all our primary button actions (cc 0-15)
         {
-            ToggleButton(button);
+            ToggleButton(button, value);
             return;
         }
 
@@ -275,7 +287,7 @@ void LibMain::ProcessButton(uint8_t button, uint8_t value)  // processes a midi 
 
 
 // we just toggle the widgets here and let the OnWidgetValueChanged() callback push the change to the control surface
-void LibMain::ToggleButton(uint8_t button)
+void LibMain::ToggleButton(uint8_t button, uint8_t value)
 {
     int x, row;
     std::string widgetname, songname = "";
@@ -323,6 +335,11 @@ void LibMain::ToggleButton(uint8_t button)
 
             if (ExecuteSpecialName(widget) == true)
 				return;
+
+            if (!widget.IsMomentary && value == 0) // if it's a button release and it's a non-momentary widget ignore it
+            {
+                return;
+			}
 
             newValue = getWidgetValue(widgetname);
 

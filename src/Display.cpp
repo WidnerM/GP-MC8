@@ -166,8 +166,8 @@ void LibMain::LongPresetNames(std::string text)
 {
     if (Surface.Color)
     {
-        PresetLongName(text, 22); // putting the preset longname (variation or songpart) here
-		EngagePreset(32, 1); // engage that preset to display the longname
+        PresetLongName(text, Surface.LongNamePreset); // putting the preset longname (variation or songpart) here
+		EngagePreset(Surface.LongNamePreset, 1); // engage that preset to display the longname
         // EngagePreset(23, 1); // engage to display the preset longname
         // switch back to whatever preset we're supposed to be on...
     }
@@ -298,8 +298,6 @@ void LibMain::TogglePreset(SurfaceRow row, uint8_t position, uint8_t value)
                 copyWidgetColors(MCX_COLOR_WIDGET_UNSELECTED, widgetname);
             }
     }
-    
-
 }
 
 void LibMain::TogglePreset(uint8_t position, uint8_t value)
@@ -318,7 +316,7 @@ void LibMain::EngagePreset(uint8_t position, uint8_t value)
     uint8_t MidiMessage[3];
 
     MidiMessage[0] = 0xb0; // cc channel zero
-    MidiMessage[1] = position;
+    MidiMessage[1] = position +10;
     MidiMessage[2] = value;
     sendMidiMessage(MidiMessage, sizeof(MidiMessage));
 }
@@ -327,7 +325,7 @@ void LibMain::TogglePage(uint8_t page)
 {
     if (Surface.Color) {
         // on MC6 Pro we have to set up an action in a preset to go to the desired absolute page
-        EngagePreset(33, page == 0 ? ACTION_LONGDOUBLETAP : ACTION_LONGDOUBLETAPRELEASE);
+        EngagePreset(Surface.ColorsPreset, page == 0 ? ACTION_LONGDOUBLETAP : ACTION_LONGDOUBLETAPRELEASE);
     }
     else if (Surface.Page != page) EngagePreset(4, 0); // on mc8 we can only toggle page using CC 4 [any]
     Surface.Page = page;
@@ -505,7 +503,16 @@ void LibMain::ClearDisplayRow(SurfaceRow row)
     }
 }
 
+uint8_t LibMain::GetWidgetTextColor(std::string offwidget)
+{
+	MC8Color colors;
+    return (uint8_t)std::stoi("0" + gigperformer::sdk::GigPerformerFunctions::getWidgetCaption(offwidget)) & 0x7f;
+    // return colors.closest_index(gigperformer::sdk::GigPerformerFunctions::getWidgetTextColor(offwidget));
+}
+
 // populate a MC8Color structure with colors from the specified widgets, or defaults if the widgets don't exist
+// only populates [0] and [1] (off and on) colors because we never use shift colors
+// not setting defaults becuase they can be set by OSC and we don't want to overwrite those
 MC8Color LibMain::PopulateColors(std::string offwidget, std::string onwidget, std::string shiftwidget)
 {
 	MC8Color colors;
@@ -514,8 +521,7 @@ MC8Color LibMain::PopulateColors(std::string offwidget, std::string onwidget, st
     {
         colors.BackgroundColor[0] = colors.closest_index(gigperformer::sdk::GigPerformerFunctions::getWidgetFillColor(offwidget));
         colors.LedColor[0] = colors.closest_index(gigperformer::sdk::GigPerformerFunctions::getWidgetOutlineColor(offwidget));
-        colors.TextColor[0] = (uint8_t) std::stoi(gigperformer::sdk::GigPerformerFunctions::getWidgetCaption(offwidget)) & 0x7f;
-        // colors.TextColor[0] = colors.closest_index(gigperformer::sdk::GigPerformerFunctions::getWidgetTextColor(offwidget));
+        colors.TextColor[0] = GetWidgetTextColor(offwidget);
     }
     else
     {
@@ -528,9 +534,14 @@ MC8Color LibMain::PopulateColors(std::string offwidget, std::string onwidget, st
     {
         colors.BackgroundColor[1] = colors.closest_index(gigperformer::sdk::GigPerformerFunctions::getWidgetFillColor(onwidget));
         colors.LedColor[1] = colors.closest_index(gigperformer::sdk::GigPerformerFunctions::getWidgetOutlineColor(onwidget));
-        // colors.TextColor[1] = colors.closest_index(gigperformer::sdk::GigPerformerFunctions::getWidgetTextColor(onwidget));
-        colors.TextColor[1] = (uint8_t)std::stoi(gigperformer::sdk::GigPerformerFunctions::getWidgetCaption(onwidget)) & 0x7f;
+        colors.TextColor[1] = GetWidgetTextColor(onwidget);
     }
+    else if (gigperformer::sdk::GigPerformerFunctions::widgetExists(offwidget))
+    {
+        colors.BackgroundColor[1] = colors.TextColor[0];
+        colors.LedColor[1] = colors.LedColor[0];
+        colors.TextColor[1] = colors.BackgroundColor[0];
+	}
     else
     {
         colors.BackgroundColor[1] = colors.TextColor[0];
@@ -542,8 +553,7 @@ MC8Color LibMain::PopulateColors(std::string offwidget, std::string onwidget, st
     {
         colors.BackgroundColor[2] = colors.closest_index(gigperformer::sdk::GigPerformerFunctions::getWidgetFillColor(shiftwidget));
         colors.LedColor[2] = colors.closest_index(gigperformer::sdk::GigPerformerFunctions::getWidgetOutlineColor(shiftwidget));
-        // colors.TextColor[2] = colors.closest_index(gigperformer::sdk::GigPerformerFunctions::getWidgetTextColor(shiftwidget));
-        colors.TextColor[2] = 13;
+        colors.TextColor[2] = GetWidgetTextColor(shiftwidget);
     }
     else
     {

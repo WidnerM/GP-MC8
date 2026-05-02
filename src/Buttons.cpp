@@ -6,11 +6,10 @@
 #include "LibMain.h"
 
 
-//  Call this when the rackspace changes or the active button bank changes
+//  Called when the rackspace changes or the active button bank changes
     //   The SL MK3 takes CC messages to light the buttons, Note On messages for the pads.
     //   This could also be done with sysex for full RGB control.
     //   Buttons can also be put into flash and pulse modes, which we do individually rather than as a bank like this.
- 
 void LibMain::DisplayButtons(SurfaceRow row, uint8_t firstbutton, uint8_t number)
 {
     std::string widgetname;
@@ -214,7 +213,7 @@ void LibMain::DisplayVariations(SurfaceRow & row, uint8_t firstbutton, uint8_t n
             }
             if (row.Showing == SHOW_BUTTONS)  // should never actually be in this function when SHOW_BUTTONS is set
             {
-                sendMidiMessage(Surface.MakeColorMessage(row.FirstID + x, Surface.WidgetColors));
+                // sendMidiMessage(Surface.MakeColorMessage(row.FirstID + x, Surface.WidgetColors));
             }
 
         }
@@ -262,7 +261,7 @@ SurfaceWidget LibMain::PopulateWidget(std::string widgetname, double passed_valu
 SurfaceWidget LibMain::PopulateWidget(std::string widgetname)
 {
     SurfaceWidget widget;
-    std::string control_number, extras, pwidgetname;
+    std::string control_number, extras, pwidgetname, cwidgetname;
 
     if (widgetExists(widgetname))
     {
@@ -329,15 +328,10 @@ SurfaceWidget LibMain::PopulateWidget(std::string widgetname)
                     // look for extra parameters on a parameter widget if it's a valid surface item widget
                     if (widget.Validated)
                     {
-                        widget.Colors = Surface.WidgetColors; // set to default widget colors
-                        widget.Colors.LedColor[1] = widget.Colors.LedColor[0] = widget.Colors.closest_index(getWidgetOutlineColor(widgetname));
-                        // widget.Colors.TextColor[1] = widget.Colors.TextColor[0] = widget.Colors.closest_index(getWidgetTextColor(widgetname));
-                        widget.Colors.BackgroundColor[1] = widget.Colors.BackgroundColor[0] = widget.Colors.closest_index(getWidgetFillColor(widgetname));
-
                         // if there is a _[x]p_ widget that takes first priority, e.g. mcx_bp_bank_0
                         // we use this for preset ShortNameOn, ShortNameOff, and LongName
                         pwidgetname =
-                            widget.SurfacePrefix + "_" + widget.WidgetID + "p_" + widget.BankID + "_" + control_number;
+                            widget.SurfacePrefix + (std::string) "_" + widget.WidgetID + "p_" + widget.BankID + "_" + control_number;
                         if (widgetExists(pwidgetname))
                         {
                             name_segments = ParseWidgetName(getWidgetCaption(pwidgetname), '_');
@@ -356,8 +350,13 @@ SurfaceWidget LibMain::PopulateWidget(std::string widgetname)
                             else
                                 widget.LongName = name_segments[0];
 
+                            if (! widget.LongName.compare("m"))
+                            {
+                                widget.IsMomentary = true;
+							}
+
                             widget.Colors.LedColor[1] = widget.Colors.LedColor[0] = widget.Colors.closest_index(getWidgetOutlineColor(pwidgetname));
-                            // widget.Colors.TextColor[1] = widget.Colors.TextColor[0] = widget.Colors.closest_index(getWidgetTextColor(pwidgetname));
+                            // widget.Colors.TextColor[1] = widget.Colors.TextColor[0] = GetWidgetTextColor(pwidgetname);
                             widget.Colors.BackgroundColor[1] = widget.Colors.BackgroundColor[0] = widget.Colors.closest_index(getWidgetFillColor(pwidgetname));
 
                             widget.Caption = getWidgetCaption(pwidgetname);
@@ -372,29 +371,16 @@ SurfaceWidget LibMain::PopulateWidget(std::string widgetname)
                             widget.LongName = widget.Caption;
                         }
 
-                        // this searches for a color widget
-                        pwidgetname = widget.SurfacePrefix + "_" + widget.WidgetID + "c_" + widget.BankID + "_" + control_number;
-                        if (widgetExists(pwidgetname))
+                        if (Surface.Color)
                         {
-                            // this line can be removed for in GP6
-                            widget.Colors.TextColor[0] = widget.Colors.TextColor[1] = (uint8_t)std::stoi(gigperformer::sdk::GigPerformerFunctions::getWidgetCaption(pwidgetname)) & 0x7f;
+                            // this searches for a color widget
+                            cwidgetname =
+                                widget.SurfacePrefix + (std::string) "_" + widget.WidgetID + "c_" + widget.BankID + "_" + control_number;
 
-                            widget.Colors.LedColor[1] =  widget.Colors.closest_index(getWidgetOutlineColor(pwidgetname));
-                            // widget.Colors.TextColor[1] =  widget.Colors.closest_index(getWidgetTextColor(pwidgetname));
-                            widget.Colors.BackgroundColor[1] = widget.Colors.closest_index(getWidgetFillColor(pwidgetname));
-
-                            name_segments = ParseWidgetName(getWidgetCaption(pwidgetname), '_');
-
-                            if (name_segments.size() >= 6)
-                            {
-                                widget.Colors.LedColor[0] = std::stoi("0" + name_segments[0]);
-                                widget.Colors.TextColor[0] = std::stoi("0" + name_segments[1]);
-                                widget.Colors.BackgroundColor[0] = std::stoi("0" + name_segments[2]);
-
-                                widget.Colors.LedColor[1] = std::stoi("0" + name_segments[3]);
-                                widget.Colors.TextColor[1] = std::stoi("0" + name_segments[4]);
-                                widget.Colors.BackgroundColor[1] = std::stoi("0" + name_segments[5]);
-                            }
+                            widget.Colors = PopulateColors(
+								widgetExists(pwidgetname) ? pwidgetname : MCX_COLOR_WIDGET_UNSELECTED,
+                                widgetExists(cwidgetname) ? cwidgetname : MCX_COLOR_WIDGET_SELECTED,
+                                MCX_COLOR_WIDGET_SELECTED);
                         }
 
                     }
