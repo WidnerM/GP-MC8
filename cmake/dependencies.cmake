@@ -51,3 +51,11 @@ FetchContent_Declare(
   GIT_TAG 29396c22c93392d6738e021b83196283d6e4d850 # v8.0.12
 )
 fetch_dependency(juce)
+
+FetchContent_Declare(
+  cereal
+  GIT_REPOSITORY https://github.com/USCiLab/cereal.git
+  GIT_TAG ebef1e929807629befafbb2918ea1a08c7194554
+  SOURCE_SUBDIR pathThatDoesNotExist
+)
+FetchContent_MakeAvailable(cereal)
